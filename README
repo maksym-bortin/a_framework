@@ -1,6 +1,6 @@
 This package contains a formalisation of a framework 
 for modelling, verification and transformation of concurrent 
-imperative programs in Isabelle2020 (www.cl.cam.ac.uk/research/hvg/Isabelle),
+imperative programs in Isabelle2021 theorem prover (www.cl.cam.ac.uk/research/hvg/Isabelle),
 see LICENSE for more details. 
 
 It includes the following theories:
