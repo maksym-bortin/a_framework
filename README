@@ -1,0 +1,21 @@
+This package contains a formalisation of a framework 
+for modelling, verification and transformation of concurrent 
+imperative programs in Isabelle2020 (www.cl.cam.ac.uk/research/hvg/Isabelle),
+see LICENSE for more details. 
+
+It includes the following theories:
+
+ - Prelims.thy       -- auxiliary lemmas
+ - LA.thy            -- abstract and concrete syntax of the framework's language
+ - SmallSteps.thy    -- the computational model
+ - Computations.thy  -- potential computations and conditions 
+ - RG.thy            -- the setup of a Hoare-style rely/guarantee program logic
+ - ProgCorr.thy      -- program correspondences
+ - AnnChange.thy     -- annotations do not affect program behaviours 
+ - Rules_prelims.thy -- auxiliaries for Rules.thy
+ - Rules.thy         -- rules of the R/G program logic
+ - RG_tactics.thy    -- a simple VCG using the rules
+ - Parallel_Inc.thy  -- the 'parallel increment' example
+ - Mutex.thy         -- verification of a model of the Peterson's mutual exclusion algorithm
+ 
+Note: processing Rules.thy may take few moments.
