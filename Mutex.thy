@@ -30,13 +30,10 @@ record 'a mutex =
  local1    :: "'a"
  
  
-definition "cond0 s \<equiv> flag0 s \<and> (\<not> turn_aux1 s \<or> \<not> flag1 s \<or> \<not> turn s)"
+definition "inv0 s \<equiv> turn_aux0 s \<longrightarrow> flag0 s \<longrightarrow> turn s"
   
-definition "cond1 s \<equiv> flag1 s \<and> (\<not> turn_aux0 s \<or> \<not> flag0 s \<or> turn s)"
-    
-lemma cond_excl :
-  "cond0 s \<Longrightarrow> cond1 s \<Longrightarrow> turn_aux0 s \<Longrightarrow> turn_aux1 s \<Longrightarrow> P"
-  by(simp add: cond0_def cond1_def)
+definition "inv1 s \<equiv> turn_aux1 s \<longrightarrow> flag1 s \<longrightarrow> \<not> turn s"
+   
     
 
     
@@ -69,10 +66,8 @@ definition
 "mutex_aux P0 cs0 Q0 P1 cs1 Q1 \<equiv>
    INTERLEAVING-BEGIN
     \<lbrakk> rely: \<lbrace> \<ordmasculine>flag0 = \<ordfeminine>flag0 \<and> \<ordmasculine>turn_aux0 = \<ordfeminine>turn_aux0 \<and> \<ordmasculine>local0 = \<ordfeminine>local0 \<and>
-             (\<ordmasculine>turn_aux0 \<longrightarrow> \<ordmasculine>cond0 \<longrightarrow> \<ordmasculine>shared = \<ordfeminine>shared) \<and>
-             (\<not>\<ordmasculine>turn_aux1 \<longrightarrow> \<ordfeminine>turn_aux1 \<longrightarrow> \<not> \<ordfeminine>turn) \<and> 
-             (\<ordmasculine>turn_aux1 \<longrightarrow> \<ordmasculine>turn = \<ordfeminine>turn) \<and>
-             (\<ordmasculine>turn_aux1 \<longrightarrow> \<ordfeminine>flag1 \<longrightarrow> \<ordmasculine>flag1) \<and>
+             (\<ordmasculine>turn_aux0 \<longrightarrow> \<ordmasculine>flag0 \<longrightarrow> \<ordmasculine>inv1 \<longrightarrow> \<ordmasculine>shared = \<ordfeminine>shared) \<and>
+             (\<ordmasculine>inv1 \<longrightarrow> \<ordfeminine>inv1) \<and>
              (P0 \<ordmasculine>shared \<longrightarrow> P0 \<ordfeminine>shared) \<and> (Q0 \<ordmasculine>shared \<longrightarrow> Q0 \<ordfeminine>shared) \<rbrace>,
       pre:  \<lbrace> \<not>\<acute>turn_aux0 \<and> P0 \<acute>shared \<rbrace>,
       post: \<lbrace>  Q0 \<acute>shared \<rbrace> 
@@ -80,10 +75,8 @@ definition
     thread0_aux cs0 P0 
   \<parallel>
     \<lbrakk> rely: \<lbrace> \<ordmasculine>flag1 = \<ordfeminine>flag1 \<and> \<ordmasculine>turn_aux1 = \<ordfeminine>turn_aux1 \<and> \<ordmasculine>local1 = \<ordfeminine>local1 \<and>
-             (\<ordmasculine>turn_aux1 \<longrightarrow> \<ordmasculine>cond1 \<longrightarrow> \<ordmasculine>shared = \<ordfeminine>shared) \<and>
-             (\<not>\<ordmasculine>turn_aux0 \<longrightarrow> \<ordfeminine>turn_aux0 \<longrightarrow> \<ordfeminine>turn) \<and> 
-             (\<ordmasculine>turn_aux0 \<longrightarrow> \<ordmasculine>turn = \<ordfeminine>turn) \<and>
-             (\<ordmasculine>turn_aux0 \<longrightarrow> \<ordfeminine>flag0 \<longrightarrow> \<ordmasculine>flag0) \<and>
+             (\<ordmasculine>turn_aux1 \<longrightarrow> \<ordmasculine>flag1 \<longrightarrow> \<ordmasculine>inv0 \<longrightarrow> \<ordmasculine>shared = \<ordfeminine>shared) \<and>
+             (\<ordmasculine>inv0 \<longrightarrow> \<ordfeminine>inv0) \<and> 
              (P1 \<ordmasculine>shared \<longrightarrow> P1 \<ordfeminine>shared) \<and> (Q1 \<ordmasculine>shared \<longrightarrow> Q1 \<ordfeminine>shared) \<rbrace>,
      pre:  \<lbrace> \<not>\<acute>turn_aux1 \<and> P1 \<acute>shared \<rbrace>,
      post: \<lbrace>  Q1 \<acute>shared \<rbrace>
@@ -127,8 +120,7 @@ definition
 section "Properties"
   
 definition "mutexR0 = {((s :: ('a, 'b) mutex_scheme), (t :: ('a, 'b) mutex_scheme)). 
-                       turn_aux0 t \<and> cond0 t \<and>
-                       s = t}"  
+                       turn_aux0 t \<and> flag0 t \<and> inv1 t \<and> s = t}"  
 
 lemma thread0_aux:
 " \<rho> \<Turnstile> cs0 
@@ -143,39 +135,38 @@ lemma thread0_aux:
 
  \<rho> \<Turnstile> thread0_aux cs0 P0 
  RELY \<lbrace> \<ordmasculine>flag0 = \<ordfeminine>flag0 \<and> \<ordmasculine>turn_aux0 = \<ordfeminine>turn_aux0 \<and> \<ordmasculine>local0 = \<ordfeminine>local0 \<and>
-        (\<ordmasculine>turn_aux0 \<longrightarrow> \<ordmasculine>cond0 \<longrightarrow> \<ordmasculine>shared = \<ordfeminine>shared) \<and>
-        (\<not>\<ordmasculine>turn_aux1 \<longrightarrow> \<ordfeminine>turn_aux1 \<longrightarrow> \<not> \<ordfeminine>turn) \<and> 
-        (\<ordmasculine>turn_aux1 \<longrightarrow> \<ordmasculine>turn = \<ordfeminine>turn) \<and>
-        (\<ordmasculine>turn_aux1 \<longrightarrow> \<ordfeminine>flag1 \<longrightarrow> \<ordmasculine>flag1) \<and>
+        (\<ordmasculine>turn_aux0 \<longrightarrow> \<ordmasculine>flag0 \<longrightarrow> \<ordmasculine>inv1 \<longrightarrow> \<ordmasculine>shared = \<ordfeminine>shared) \<and>
+        (\<ordmasculine>inv1 \<longrightarrow> \<ordfeminine>inv1) \<and> 
         (P0 \<ordmasculine>shared \<longrightarrow> P0 \<ordfeminine>shared) \<and> (Q0 \<ordmasculine>shared \<longrightarrow> Q0 \<ordfeminine>shared)  \<rbrace>
   PRE  \<lbrace> \<not>\<acute>turn_aux0 \<and> P0 \<acute>shared \<rbrace> 
   POST \<lbrace> Q0 \<acute>shared \<rbrace>
  GUAR \<lbrace> \<ordmasculine>flag1 = \<ordfeminine>flag1 \<and> \<ordmasculine>turn_aux1 = \<ordfeminine>turn_aux1 \<and> \<ordmasculine>local1 = \<ordfeminine>local1 \<and>
-        (\<ordmasculine>turn_aux1 \<longrightarrow> \<ordmasculine>cond1 \<longrightarrow> \<ordmasculine>shared = \<ordfeminine>shared) \<and>
-        (\<not>\<ordmasculine>turn_aux0 \<longrightarrow> \<ordfeminine>turn_aux0 \<longrightarrow> \<ordfeminine>turn) \<and> 
-        (\<ordmasculine>turn_aux0 \<longrightarrow> \<ordmasculine>turn = \<ordfeminine>turn) \<and>
-        (\<ordmasculine>turn_aux0 \<longrightarrow> \<ordfeminine>flag0 \<longrightarrow> \<ordmasculine>flag0) \<and>
+        (\<ordmasculine>turn_aux1 \<longrightarrow> \<ordmasculine>flag1 \<longrightarrow> \<ordmasculine>inv0 \<longrightarrow> \<ordmasculine>shared = \<ordfeminine>shared) \<and>
+        (\<ordmasculine>inv0 \<longrightarrow> \<ordfeminine>inv0) \<and> 
         (P1 \<ordmasculine>shared \<longrightarrow> P1 \<ordfeminine>shared) \<and> (Q1 \<ordmasculine>shared \<longrightarrow> Q1 \<ordfeminine>shared)  \<rbrace>"
   unfolding thread0_aux_def
   apply rg_tac
-  apply(erule prog_corr_RG, assumption)
-     apply(thin_tac _)+
-     apply clarsimp
-     apply(rename_tac s t t')
-     apply(clarsimp simp: mutexR0_def)
-     apply(rule_tac b=t' in relcompI, simp, simp)
-     apply(clarsimp simp: cond0_def)  
-    apply(clarsimp simp: mutexR0_def cond0_def)
-   apply(clarsimp simp: mutexR0_def) 
-  apply(thin_tac _)+
-  apply(clarsimp simp: mutexR0_def)
-  apply(erule cond_excl, assumption+) 
+     apply(simp (no_asm) add: inv0_def)
+    apply(erule prog_corr_RG, assumption)
+       apply(thin_tac _)+
+       apply clarsimp
+       apply(rename_tac s t t')
+       apply(clarsimp simp: mutexR0_def)
+       apply(rule_tac b=t' in relcompI, simp, simp)
+      apply(clarsimp simp: mutexR0_def inv1_def)
+     apply(clarsimp simp: mutexR0_def) 
+     apply(simp (no_asm) add: inv0_def)
+    apply(thin_tac _)+
+    apply(clarsimp simp: mutexR0_def)
+    apply(rule conjI)
+     apply(simp add: inv0_def inv1_def)
+    apply(simp add: inv0_def)+
   done
 
     
 
 definition "mutexR1 = {((s :: ('a, 'b) mutex_scheme), (t :: ('a, 'b) mutex_scheme)). 
-                       s = t \<and> turn_aux1 t \<and> cond1 t}"  
+                       s = t \<and> turn_aux1 t \<and> flag1 t \<and> inv0 t}"  
     
 lemma thread1_aux:
 " \<rho> \<Turnstile> cs1 
@@ -190,33 +181,32 @@ lemma thread1_aux:
 
  \<rho> \<Turnstile> thread1_aux cs1 P1 
  RELY \<lbrace> \<ordmasculine>flag1 = \<ordfeminine>flag1 \<and> \<ordmasculine>turn_aux1 = \<ordfeminine>turn_aux1 \<and> \<ordmasculine>local1 = \<ordfeminine>local1 \<and>
-        (\<ordmasculine>turn_aux1 \<longrightarrow> \<ordmasculine>cond1 \<longrightarrow> \<ordmasculine>shared = \<ordfeminine>shared) \<and>
-        (\<not>\<ordmasculine>turn_aux0 \<longrightarrow> \<ordfeminine>turn_aux0 \<longrightarrow> \<ordfeminine>turn) \<and> 
-        (\<ordmasculine>turn_aux0 \<longrightarrow> \<ordmasculine>turn = \<ordfeminine>turn) \<and>
-        (\<ordmasculine>turn_aux0 \<longrightarrow> \<ordfeminine>flag0 \<longrightarrow> \<ordmasculine>flag0) \<and>
+        (\<ordmasculine>turn_aux1 \<longrightarrow> \<ordmasculine>flag1 \<longrightarrow> \<ordmasculine>inv0 \<longrightarrow> \<ordmasculine>shared = \<ordfeminine>shared) \<and>
+        (\<ordmasculine>inv0 \<longrightarrow> \<ordfeminine>inv0) \<and> 
         (P1 \<ordmasculine>shared \<longrightarrow> P1 \<ordfeminine>shared) \<and> (Q1 \<ordmasculine>shared \<longrightarrow> Q1 \<ordfeminine>shared)  \<rbrace> 
   PRE  \<lbrace> \<not>\<acute>turn_aux1 \<and> P1 \<acute>shared \<rbrace> 
   POST \<lbrace> Q1 \<acute>shared \<rbrace> 
   GUAR \<lbrace> \<ordmasculine>flag0 = \<ordfeminine>flag0 \<and> \<ordmasculine>turn_aux0 = \<ordfeminine>turn_aux0 \<and> \<ordmasculine>local0 = \<ordfeminine>local0 \<and>
-        (\<ordmasculine>turn_aux0 \<longrightarrow> \<ordmasculine>cond0 \<longrightarrow> \<ordmasculine>shared = \<ordfeminine>shared) \<and>
-        (\<not>\<ordmasculine>turn_aux1 \<longrightarrow> \<ordfeminine>turn_aux1 \<longrightarrow> \<not> \<ordfeminine>turn) \<and> 
-        (\<ordmasculine>turn_aux1 \<longrightarrow> \<ordmasculine>turn = \<ordfeminine>turn) \<and>
-        (\<ordmasculine>turn_aux1 \<longrightarrow> \<ordfeminine>flag1 \<longrightarrow> \<ordmasculine>flag1) \<and>
+        (\<ordmasculine>turn_aux0 \<longrightarrow> \<ordmasculine>flag0 \<longrightarrow> \<ordmasculine>inv1 \<longrightarrow> \<ordmasculine>shared = \<ordfeminine>shared) \<and>
+        (\<ordmasculine>inv1 \<longrightarrow> \<ordfeminine>inv1) \<and> 
         (P0 \<ordmasculine>shared \<longrightarrow> P0 \<ordfeminine>shared) \<and> (Q0 \<ordmasculine>shared \<longrightarrow> Q0 \<ordfeminine>shared)  \<rbrace>"
   unfolding thread1_aux_def
   apply rg_tac
-  apply(erule prog_corr_RG, assumption)
-     apply(thin_tac _)+
-     apply clarsimp
-     apply(rename_tac s t t')
-     apply(clarsimp simp: mutexR1_def)
-     apply(rule_tac b=t' in relcompI, simp, simp)
-     apply(clarsimp simp: cond1_def) 
-    apply(clarsimp simp: mutexR1_def cond1_def)
-   apply(clarsimp simp: mutexR1_def) 
-  apply(thin_tac _)+
-  apply(clarsimp simp: mutexR1_def)
-  apply(erule cond_excl, assumption+) 
+     apply(simp (no_asm) add: inv1_def)
+    apply(erule prog_corr_RG, assumption)
+       apply(thin_tac _)+
+       apply clarsimp
+       apply(rename_tac s t t')
+       apply(clarsimp simp: mutexR1_def)
+       apply(rule_tac b=t' in relcompI, simp, simp)
+      apply(clarsimp simp: mutexR1_def inv0_def)
+     apply(clarsimp simp: mutexR1_def) 
+     apply(simp (no_asm) add: inv1_def)
+    apply(thin_tac _)+
+    apply(clarsimp simp: mutexR1_def)
+    apply(rule conjI)
+     apply(simp add: inv0_def inv1_def)
+    apply(simp add: inv1_def)+
   done
 
 
@@ -362,7 +352,7 @@ lemma concurrent_upds[simplified] :
   apply(rule mutex)
        apply(simp, rule shared_upd0)
       apply(simp, rule shared_upd1)
-     apply(simp_all add: shared_upd0_def shared_upd1_def mutexR0_def mutexR1_def mutexR_def cond0_def cond1_def)
+     apply(simp_all add: shared_upd0_def shared_upd1_def mutexR0_def mutexR1_def mutexR_def inv0_def inv1_def)
      apply plain_prog_corr_tac+
   done
 
@@ -382,11 +372,12 @@ definition
          \<ordmasculine>turn_aux0 = \<ordfeminine>turn_aux0 \<and> \<ordmasculine>turn_aux1 = \<ordfeminine>turn_aux1 \<rbrace>)"
 
 
-text "Note that the rely conditions \<ordmasculine>flag0 = \<ordfeminine>flag0 and \<ordmasculine>flag1 = \<ordfeminine>flag1 below
-      are solely due to the annotations in the definitions of thread0_aux and thread1_aux, 
+text "Note that the rely condition \<ordmasculine>flag0 = \<ordfeminine>flag0 in thread0_auxG below
+      is solely due to the annotations in the definition of thread0_aux 
       which are too detailed for the current setting. 
-      An appropriate adjustment of the annotations would allow us to discard these relies.
-
+      This condition could be simply discarded if the annotations would be 
+      adjusted accordingly."
+ 
 lemma thread0_auxG:
 "cs_cond \<rho> cs0 \<Longrightarrow> 
  \<rho> \<Turnstile> thread0_aux cs0 (\<lambda>a. True)
@@ -452,7 +443,7 @@ lemma mutex_auxG :
          (\<ordmasculine>turn_aux0 \<longrightarrow> \<ordfeminine>flag0 \<longrightarrow> \<ordmasculine>flag0) \<and>
          (\<ordmasculine>turn_aux1 \<longrightarrow> \<ordfeminine>turn_aux1) \<and>
          (\<ordmasculine>turn_aux1 \<longrightarrow> \<ordfeminine>flag1 \<longrightarrow> \<ordmasculine>flag1) \<rbrace>"
-  unfolding mutex_auxG_def  
+  unfolding mutex_auxG_def 
   apply rg_tac
    apply(rule ConseqRG, rule thread1_auxG, simp, simp, clarsimp, clarsimp)
    apply clarsimp
