@@ -17,7 +17,7 @@ imports LA
 begin
 
 
-section "Definitions of fine-grained (small) computation steps"
+section "The fine-grained (small) computation steps"
 
 type_synonym 's config = "'s LA \<times> 's"
 
@@ -31,7 +31,7 @@ lemma estep_eq[simp] :
 "(\<turnstile> (p, s) -e\<rightarrow> (p', t)) = (p = p')"
   by(simp add: estep_def)
 
-(* \<rho> is a 'code retrieve' function *)
+(* \<rho> is a 'code retrieving' function *)
 inductive pstep :: "(nat \<Rightarrow> 's LA) \<Rightarrow> 's config \<Rightarrow> 's config \<Rightarrow> bool"
                         ("_ \<turnstile> (_ -p\<rightarrow>/ _)" [81,81,81] 100)
 for \<rho> :: "nat \<Rightarrow> 's LA" 
@@ -83,7 +83,7 @@ abbreviation
 
 
 
-section "Some basic properties"
+section "Some properties"
 
 
 lemma pstep_Jump :
