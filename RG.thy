@@ -16,8 +16,7 @@ theory RG
 imports Computations
 begin
 
-
-subsection "Extended Hoare-triples"
+section "Extended Hoare-triples"
 
 definition HoareTripleRG :: "(nat \<Rightarrow> 's LA) \<Rightarrow> 's staterel \<Rightarrow> 's set \<Rightarrow> 's LA \<Rightarrow>
                               's set \<Rightarrow> 's staterel \<Rightarrow> bool"
@@ -63,8 +62,7 @@ lemma HoareTripleRG_singleton_eq :
  done
 
 
-
-section "Properties of finite and infinite computations"
+subsection "Properties of finite and infinite computations"
 
 
 definition HoareTripleRG_i :: "(nat \<Rightarrow> 's LA) \<Rightarrow> 's staterel \<Rightarrow> 's set \<Rightarrow> 's LA \<Rightarrow>
