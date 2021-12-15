@@ -309,7 +309,7 @@ ML \<open> val syntax_debug = false
   fun prgs_lst_tr'
             [Const (@{const_syntax map}, _) $ Abs (i, T, p) $ upt] =
         let val (j, k) = dest_upt upt
-            fun dest_abs body = snd (Term.dest_abs (i, T, body))
+            fun dest_abs body = snd (Term.dest_abs_global body)
         in prg_tr' @{syntax_const "_PrgScheme"} @{syntax_const "_AnnPrgScheme"}
                  [j, Free (i, T), k] (dest_abs p)
         end

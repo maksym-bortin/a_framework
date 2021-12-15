@@ -1148,7 +1148,7 @@ lemma SeqRule :
      apply(rule allI, rename_tac k)
      apply(clarsimp simp: cstep_cond_def)
      apply(frule_tac x=k in spec, drule mp, simp)
-     apply(drule_tac x="k-1" in spec, drule mp, rule conjI, simp, simp)
+     apply(drule_tac x="k-1" in spec, drule_tac P="k-1 < Suc i" in mp, simp)
      apply(drule_tac t="sq1!(k - Suc 0)" in sym, clarsimp)
      apply(erule_tac i=k in EnvCond_D, simp, assumption+)
     apply(subst InitCond_def, simp)
@@ -1157,14 +1157,13 @@ lemma SeqRule :
     apply(drule_tac x="0" in spec, drule mp, simp)
     apply(case_tac "sq1!0", clarsimp+)
    apply(rule conjI)
-    apply(frule_tac x=i in spec, drule mp, rule conjI, simp, simp)
+    apply(frule_tac x=i in spec, drule mp, rule lessI)
     apply(drule TermCond_D)
     apply(drule_tac x=i in spec, drule_tac P="i<length sq1" in mp, simp)
     apply(drule mp, simp)
     apply clarsimp
     apply(rename_tac k t' tk')
     apply(case_tac "k = i", clarsimp)
-    apply(drule_tac x=k in spec, drule mp, rule conjI, simp, simp)
     apply(drule_tac x=k in spec, drule_tac P="k<i" in mp, simp)
     apply clarsimp
    apply(subst ProgCond_def, simp)
@@ -1172,8 +1171,8 @@ lemma SeqRule :
      apply(rule prefix_take, clarsimp)
    apply(rule allI, rename_tac k)
    apply(clarsimp simp: cstep_cond_def)
-   apply(frule_tac x=k in spec, drule mp, rule conjI, simp, simp)
-   apply(drule_tac x="k-1" in spec, drule mp, rule conjI, simp, simp)
+   apply(frule_tac x=k in spec, drule_tac P="k<Suc i" in mp, simp)
+   apply(drule_tac x="k-1" in spec, drule_tac P="k-1<Suc i" in mp, simp)
    apply(case_tac "sq1!(k - 1)", case_tac "sq1!k", clarsimp)
    apply(erule_tac i=k in ProgCond_D, simp, assumption+)
   apply(subgoal_tac "drop i sq \<in> \<lbrakk>(SKIP;q)\<rbrakk>\<^sub>\<rho>")
@@ -1192,7 +1191,7 @@ lemma SeqRule :
     apply clarsimp
     apply(rename_tac k)
     apply(case_tac "k \<le> i")
-     apply(drule_tac x=k in spec, drule mp, erule conjI, simp+)
+     apply(drule_tac x=k in spec, drule_tac P="k<Suc i" in mp, simp+)
     apply(drule_tac x="k - i" in spec, drule_tac P="k-i<length sq-i" in mp, simp)
     apply simp
    apply(subst ProgCond_def, simp)
@@ -1215,14 +1214,8 @@ lemma SeqRule :
   apply(frule_tac sq="take (i1-i) (drop i sq)" in Seq_split2)
    apply clarsimp
   apply clarsimp
-  apply(subgoal_tac "length sq2 = i1 - i")
-   prefer 2
-   apply(erule_tac t="length sq2" in subst)
-   apply(simp add: min_def)
-  apply(thin_tac " min (length sq - i) (i1 - i) = length sq2")
-  apply simp
   apply(frule_tac x="i1 - 1 - i" in spec, 
-        drule_tac P="i1 - 1 - i < i1-i" in mp, simp)
+        drule_tac P="i1 - 1 - i < length sq2" in mp, simp)
   apply(case_tac "sq!i1", case_tac "sq!(i1-1)", clarsimp)
   apply(frule_tac sq=sq and i=i1 in pcs_nth, simp, simp)
   apply clarsimp
@@ -1236,6 +1229,8 @@ lemma SeqRule :
    apply(subst last_conv_nth, erule pcs_noNil)
    apply(subst hd_conv_nth, clarsimp)
    apply clarsimp
+   apply(erule_tac t="length sq2" in subst)
+   apply simp
   apply(subgoal_tac "sq2 @ tl(drop i1 sq) \<in> \<lbrakk>q\<rbrakk>\<^sub>\<rho>")
    prefer 2
    apply(frule_tac sq=sq2 in pcs_noNil)
@@ -1244,14 +1239,13 @@ lemma SeqRule :
    apply(erule_tac sq=sq2 in pcs0)
   apply(subgoal_tac "sq2 @ tl (drop i1 sq) \<in> EnvCond \<rho> R")
    prefer 2
-   apply(thin_tac "\<forall>x. x < length sq \<and> x< Suc i \<longrightarrow> _ x ")
    apply(rule EnvCond_compose)
      apply(subst EnvCond_def, simp)
      apply(rule conjI, erule exI)
      apply(rule allI, rename_tac k)
      apply(clarsimp simp: cstep_cond_def)
      apply(frule_tac x=k in spec, drule mp, assumption)
-     apply(drule_tac x="k-1" in spec, drule_tac P="k-1<i1 - i" in mp, simp)
+     apply(drule_tac x="k-1" in spec, drule_tac P="k-1<length sq2" in mp, simp)
      apply(case_tac "sq!(i+k-1)", case_tac "sq!(i+k)", clarsimp)
      apply(drule_tac x="i+k" in spec, simp)+
      apply(erule_tac i="i+k" in EnvCond_D, simp, simp, assumption+)
@@ -1260,22 +1254,23 @@ lemma SeqRule :
    apply clarsimp
    apply(subst hd_conv_nth, simp)
    apply clarsimp
+   apply(erule_tac t="length sq2" in subst, simp)
   apply(subst (asm) HoareTripleRG_def[where p=q])
   apply(drule_tac c="sq2 @ tl(drop i1 sq)" in subsetD, simp)
    apply(subst InitCond_def, simp)
    apply(rule conjI, erule exI)
    apply(subst hd_conv_nth, erule COMP_noNil)
-   apply(subst nth_append, simp)
+   apply(subst nth_append, clarsimp)
   apply(rule conjI)
    apply(subst TermCond_def, simp)
    apply(rule conjI, erule exI)
    apply(rule allI, rename_tac k)
    apply clarify
    apply(case_tac "k \<le> i")
-    apply(drule_tac x=k in spec, drule mp, rule conjI, clarsimp+)
+    apply(drule_tac x=k in spec, drule_tac P="k<length sq2" in mp, clarsimp+)
    apply(drule not_le_imp_less)
    apply(case_tac "k < i1")
-    apply(drule_tac x="k-i" in spec, drule_tac P="k-i<i1-i" in mp, simp)
+    apply(drule_tac x="k-i" in spec, drule_tac P="k-i<length sq2" in mp, simp)
     apply clarsimp
    apply(drule leI)
    apply(case_tac "q=Skip", clarsimp)
@@ -1285,7 +1280,7 @@ lemma SeqRule :
      apply simp
     apply(drule mp)
      apply(subst nth_append, simp)
-     apply(clarify, erule notE, rule diff_less_mono2)
+     apply(clarify, erule notE, erule_tac t="length sq2" in subst, rule diff_less_mono2)
       apply(simp (no_asm))
      apply assumption
     apply clarsimp
@@ -1321,13 +1316,14 @@ lemma SeqRule :
    apply(drule mp, simp)
     apply(subst nth_append, simp)
     apply(subst nth_tl, simp)
-    apply simp
+    apply(erule_tac t="length sq2" in subst, simp)
    apply(erule exE, rename_tac l)
    apply clarsimp
    apply(subst (asm) nth_append, simp split: if_splits)
    apply(drule leI)
    apply(subst (asm) nth_tl, simp)
    apply simp
+   apply(drule_tac t="length sq2" in sym)
    apply(rule_tac x="l+i+1" in exI, simp)
   apply(subgoal_tac "sq = take (i1 + 1) sq @ tl(drop i1 sq)")
    prefer 2
@@ -1352,8 +1348,9 @@ lemma SeqRule :
      apply(subst last_conv_nth, simp)
      apply(subst hd_conv_nth, simp, simp, simp)
    apply clarify
-   apply(drule ProgCond_decompose, simp, simp)
+   apply(drule ProgCond_decompose, clarsimp, simp)
     apply(subst last_conv_nth, (drule pcs_noNil)+, simp)
+    apply(drule_tac t="length sq2" in sym)
     apply(subst hd_conv_nth, simp, simp, simp)
   apply(subst last_conv_nth, simp)
   apply(subst hd_conv_nth, (simp add: min_def)+)
