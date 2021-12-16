@@ -16,12 +16,18 @@ theory LA
 imports Prelims
 begin
 
+text "highlighting the type of relations between (abstract) states"
 type_synonym 'a staterel = "('a \<times> 'a) set"
 
+
+text "an auxiliary annotation structure for the parallel components"
 record 's annpar =
   ap_rely :: "'s staterel"
   ap_precond :: "'s set"
   ap_postcond :: "'s set"
+
+
+section "A generic imperative language"
 
 
 datatype 's LA =
@@ -34,6 +40,8 @@ datatype 's LA =
   | Await "'s set" "'s set" "'s LA"
   | CJump "'s set" nat "'s LA"
 
+
+text "the unconditional jump instruction"
 definition "Jump i = CJump UNIV i Skip"
 
 
@@ -53,7 +61,7 @@ lemma jumpfree_Jump[simp] :
   by(simp add: Jump_def)
 
 
-(* locally sequential programs *)
+text "locally sequential programs"
 fun locally_seq :: "'s LA \<Rightarrow> bool"
 where "locally_seq (Seq p1 p2) = (locally_seq p1 \<and> locally_seq p2)" |
       "locally_seq (Parallel ps) = False" |
@@ -70,7 +78,7 @@ lemma locally_seq_Jump[simp] :
 
 
 
-(* local jumps *)
+text "the set of local jumps"
 fun ljumps :: "'s LA \<Rightarrow> nat set"
 where "ljumps Skip = {}" |
       "ljumps (Basic f) = {}" |
@@ -87,7 +95,11 @@ lemma ljumps_Jump[simp] :
   by(simp add: Jump_def)
 
 
-section "Concrete syntax"
+
+
+
+
+section "Concrete syntax for the LA programs"
 
 syntax
   "_quote"     :: "'b \<Rightarrow> ('a \<Rightarrow> 'b)"                ("(\<guillemotleft>_\<guillemotright>)" [0] 1000)
@@ -112,6 +124,7 @@ lemma neg_Collect[simp] :
 syntax
   "_fst" :: "'a \<times> 'b \<Rightarrow> 'a"  ("_\<^sub>," [60] 61)
   "_snd" :: "'a \<times> 'b \<Rightarrow> 'b"  ("_\<^sub>." [60] 61)
+
 
 parse_translation \<open>
   let
@@ -248,7 +261,21 @@ translations
 
 
 
-ML \<open> val syntax_debug = false
+
+
+ML \<open> 
+
+fun dest_absL (x, T, body) =
+  let
+    fun name_clash (Free (y, _)) = (x = y)
+      | name_clash (t $ u) = name_clash t orelse name_clash u
+      | name_clash (Abs (_, _, t)) = name_clash t
+      | name_clash _ = false;
+  in
+    if name_clash body then
+      dest_absL (singleton (Name.variant_list [x]) x, T, body)    (*potentially slow*)
+    else (x, subst_bound (Free (x, T), body))
+  end;
 
   fun quote_tr' f (t :: ts) =
         Term.list_comb (f $ Syntax_Trans.quote_tr' @{syntax_const "_antiquote"} t, ts)
@@ -268,15 +295,12 @@ ML \<open> val syntax_debug = false
     | annbexp_tr' name (r :: Const (@{const_syntax Set.empty}, _) :: ts) =
         annquote_tr' (Syntax.const name)
                      (r :: Abs ("s", dummyT, Const (@{const_syntax False}, dummyT)) :: ts)
-    | annbexp_tr' _ x =
-        let val _ = if syntax_debug then writeln ("annbexp_tr'\n " ^ @{make_string} x) else () in
-        raise Match end;
+    | annbexp_tr' _ _ = raise Match;
 
   fun annassign_tr' (r :: Abs (x, _, f $ k $ Bound 0) :: ts) =
         quote_tr' (Syntax.const @{syntax_const "_Assign"} $ r $ Syntax_Trans.update_name_tr' f)
           (Abs (x, dummyT, Syntax_Trans.const_abs_tr' k) :: ts)
-    | annassign_tr' r = let val _ = writeln ("annassign_tr'\n " ^ @{make_string} r) in
-     raise Match end;
+    | annassign_tr' _ = raise Match;
 
   fun dest_list (Const (@{const_syntax Nil}, _)) = []
     | dest_list (Const (@{const_syntax Cons}, _) $ x $ xs) = x :: dest_list xs
@@ -292,9 +316,7 @@ ML \<open> val syntax_debug = false
     | dest_upt _ = raise Match;
 
   fun dest_apar (Const (@{const_syntax annpar_ext}, _) $ r $ p $ q $ _) = (r, p, q)
-    | dest_apar _ =
-     let val _ = if syntax_debug then writeln ("Could not match dest apr") else ()
-     in raise Match end;
+    | dest_apar _ = raise Match;
 
   fun prg_tr' const aconst xs pqa =
         let val (c, apr) = dest_prod pqa
@@ -309,37 +331,28 @@ ML \<open> val syntax_debug = false
   fun prgs_lst_tr'
             [Const (@{const_syntax map}, _) $ Abs (i, T, p) $ upt] =
         let val (j, k) = dest_upt upt
-            fun dest_abs body = snd (Term.dest_abs_global body)
         in prg_tr' @{syntax_const "_PrgScheme"} @{syntax_const "_AnnPrgScheme"}
-                 [j, Free (i, T), k] (dest_abs p)
+                 [j, Free (i, T), k] (snd(dest_absL (i, T, p)))
         end
     | prgs_lst_tr' [p] =
         prg_tr' @{syntax_const "_Prg"} @{syntax_const "_AnnPrg"} [] p
     | prgs_lst_tr' (p :: ps)  =
         prg_tr' @{syntax_const "_Prgs"} @{syntax_const "_AnnPrgs"} [] p $
           prgs_lst_tr' ps 
-    | prgs_lst_tr' p =
-       let val _ = if syntax_debug then writeln ("prgs_lst_tr'\n " ^ @{make_string} [p]) else ()
-       in raise Match end
+    | prgs_lst_tr' _ = raise Match
 
   fun Parallel_tr (cs :: _) =
-        let val _ = if syntax_debug then writeln "Parallel" else ()
-            val cs' = dest_list cs
+        let val cs' = dest_list cs
         in Syntax.const @{syntax_const "_PAR"} $
              prgs_lst_tr' cs' end
-    | Parallel_tr x = let val _ = if syntax_debug then writeln ("###Parallel:\n " ^ @{make_string} x) else ()
-                      in raise Match end;
+    | Parallel_tr _ = raise Match;
 
   fun Basic_tr (Abs (x, _, f $ k $ Bound 0) :: ts) =
-      let val _ = if syntax_debug then writeln "Basic'" else () in
-        quote_tr' (Syntax.const @{syntax_const "_Assign"} $ Syntax_Trans.update_name_tr' f)
-          (Abs (x, dummyT, Syntax_Trans.const_abs_tr' k) :: ts) end
-    | Basic_tr ((f $ k) :: ts) =
-      let val _ = if syntax_debug then writeln "Basic" else () in
-        quote_tr' (Syntax.const @{syntax_const "_Assign"} $ Syntax_Trans.update_name_tr' f)
-          (k :: ts) end
-    | Basic_tr x = let val _ = if syntax_debug then writeln ("###Basic:\n " ^ @{make_string} x) else ()
-                   in raise Match end;
+      quote_tr' (Syntax.const @{syntax_const "_Assign"} $ Syntax_Trans.update_name_tr' f)
+          (Abs (x, dummyT, Syntax_Trans.const_abs_tr' k) :: ts) 
+    | Basic_tr ((f $ k) :: ts) = quote_tr' (Syntax.const @{syntax_const "_Assign"} $ Syntax_Trans.update_name_tr' f)
+          (k :: ts) 
+    | Basic_tr _ = raise Match;
 
 \<close>
 
@@ -348,8 +361,6 @@ print_translation \<open>
    (@{const_syntax Basic}, K Basic_tr),
    (@{const_syntax Parallel}, K Parallel_tr)]
 \<close>
-
-
 
 
 
