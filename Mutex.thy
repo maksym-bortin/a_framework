@@ -236,10 +236,7 @@ lemma mutex_aux :
   POST \<lbrace> Q0 \<acute>shared \<and> Q1 \<acute>shared \<rbrace>
   GUAR \<lbrace> True \<rbrace>"
   unfolding mutex_aux_def  
-  apply(rg_tac thread0_aux thread1_aux)
-      apply fast
-     apply simp+
-  done
+  by(rg_tac use: thread0_aux thread1_aux)
 
 
     
@@ -299,7 +296,7 @@ lemma mutex :
   done
 
 
-section "An example instantiation"
+section "An example"
   
     
 definition
@@ -359,7 +356,7 @@ lemma concurrent_upds[simplified] :
 
 
 
-section "Deriving the global guarantees for liveness"
+section "Deriving the global guarantees, relevant for liveness"
 
 
 definition 

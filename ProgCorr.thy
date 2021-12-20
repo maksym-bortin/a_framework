@@ -795,6 +795,32 @@ corollary prog_corr_atomic2_basic :
   by simp
 
 
+corollary prog_corr_atomic3_basic :
+"\<forall>(s, t) \<in> r. (g3(g2(g1 s)), f t) \<in> r \<Longrightarrow>
+ \<rho>, \<rho>' \<Turnstile> (AWAIT UNIV \<lbrakk>ann: a\<rbrakk> THEN Basic g1; Basic g2; Basic g3 END) \<sqsupseteq>\<^bsub>r\<^esub> Basic f"
+  apply(rule prog_corr_await_basic, clarsimp)
+  apply(drule bspec, assumption, clarsimp)
+  apply(rule exI, rule conjI)
+   apply(rule rtranclp_trans)
+    apply(rule rtranclp_trans)
+     apply(rule r_into_rtranclp)
+     apply(rule pstep.Seq)
+     apply(rule pstep.Basic)
+    apply(rule r_into_rtranclp)
+    apply(rule pstep.SeqSkip)
+   apply(rule rtranclp_trans)
+    apply(rule rtranclp_trans)
+     apply(rule r_into_rtranclp)
+     apply(rule pstep.Seq)
+     apply(rule pstep.Basic)
+    apply(rule r_into_rtranclp)
+    apply(rule pstep.SeqSkip)
+   apply(rule r_into_rtranclp)
+   apply(rule pstep.Basic)
+  by assumption
+
+
+
 lemma prog_corr_basic_await : 
 "\<forall>(s, t) \<in> r. \<forall>t'. t \<in> C \<longrightarrow> \<rho>' \<turnstile> (p, t) -p\<rightarrow>\<^sup>* (SKIP, t') \<longrightarrow> (f s, t') \<in> r \<Longrightarrow>
  \<rho>, \<rho>' \<Turnstile> Basic f \<sqsupseteq>\<^bsub>r\<^esub> (AWAIT C \<lbrakk>ann: a\<rbrakk> THEN p END)"
@@ -1311,7 +1337,8 @@ FIRST[rt ctxt (@{thm ProgCorr.prog_corr_seqs}) i,
       rt ctxt (@{thm ProgCorr.prog_corr_whiles}) i,
       rt ctxt (@{thm ProgCorr.prog_corr_conds}) i,
       rt ctxt (@{thm ProgCorr.prog_corr_cjumps}) i,
-      rt ctxt (@{thm ProgCorr.prog_corr_atomic2_basic}) i, 
+        rt ctxt (@{thm ProgCorr.prog_corr_atomic2_basic}) i,
+        rt ctxt (@{thm ProgCorr.prog_corr_atomic3_basic}) i,
       rt ctxt (@{thm ProgCorr.prog_corr_await_basic}) i, 
       ((rt ctxt (@{thm ProgCorr.prog_corr_basics})) THEN_ALL_NEW clarsimp_tac ctxt) i,
       rt ctxt (@{thm ProgCorr.prog_corr_skips}) i,

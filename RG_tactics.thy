@@ -286,7 +286,8 @@ FIRST[(rt ctxt (@{thm HoareTripleRG_i}) i),
       ((rt ctxt (@{thm AwaitF2_VCG})) THEN_ALL_NEW (rg_aux_tac2 ctxt)) i,
       ((rt ctxt (@{thm AwaitT1_VCG})) THEN_ALL_NEW (rg_aux_tac3 ctxt)) i,
       ((rt ctxt (@{thm AwaitT2_VCG})) THEN_ALL_NEW (rg_aux_tac3 ctxt)) i,
-      ((rt ctxt (@{thm VCG_exit}) i) THEN (rt ctxt (@{thm ConseqRG}) i) THEN (rts ctxt props) i),
+      ((rt ctxt (@{thm VCG_exit}) i) THEN (rt ctxt (@{thm ConseqRG}) i) THEN 
+       ((rts ctxt props) THEN_ALL_NEW (fn j => TRY (assume_tac ctxt j))) i),
       (et ctxt (@{thm PCasesE'}) i) THEN (safe_simp_tac ctxt i)]
 
 
@@ -319,12 +320,15 @@ fun rg_tac props ctxt =
  end
 
 
+val sc = Scan.optional(Scan.lift (Args.$$$ "use" -- Args.colon) |-- Attrib.thms) []
 
 val _ =
   Theory.setup
-    (Method.setup @{binding rg_tac} (Attrib.thms >> (fn ths => fn ctxt => 
+    (Method.setup @{binding rg_tac}   (sc >> (fn ths => fn ctxt => 
       SIMPLE_METHOD' (rg_tac ths ctxt)))
       "verification condition generator for RG")
+    
+
 
 \<close>
 
