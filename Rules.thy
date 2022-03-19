@@ -1275,35 +1275,35 @@ lemma SeqRule :
    apply(drule leI)
    apply(case_tac "q=Skip", clarsimp)
     apply(drule TermCond_D)
-    apply(drule_tac x="i1 - Suc i" in spec,
-        drule_tac P="i1-Suc i < length (sq2 @ tl (drop i1 sq))" in mp)
-     apply simp
-    apply(drule mp)
-     apply(subst nth_append, simp)
-     apply(clarify, erule notE, erule_tac t="length sq2" in subst, rule diff_less_mono2)
-      apply(simp (no_asm))
-     apply assumption
-    apply clarsimp
-    apply(rename_tac l t2 tk2)
+    apply(drule_tac x="0" in spec,
+          drule_tac P="0 < length (sq2 @ tl (drop i1 sq))" in mp, simp)
+    apply(drule mp, subst nth_append, simp)
+     apply(drule pcs_noNil)+
+     apply clarsimp+
+    apply(rename_tac t2 tk2)
     apply(subst (asm) nth_append, simp split: if_splits)
+    apply(rule_tac x=i1 in exI, simp)
     apply(frule_tac sq=sq2 in pcsD)
-    apply(drule_tac sq=sq2 and i=l and j="i1 - Suc i" and Q=Q in Skip_COMP')
-          apply(rename_tac k s t' p' tk')
-          apply(drule_tac R=R and sq="sq2 @ tl (drop i1 sq)" and pr=sq2 in EnvCond_prefix_cls)
-             apply(subst prefix_def, rule exI, rule refl)
-            apply(erule pcs_noNil)
-           apply(rule subset_refl)
+    apply(drule_tac sq=sq2 and i=0 and j="i1 - i - 1" and Q=Q in Skip_COMP')
+          apply(rename_tac l s t' p' tk')
           apply(erule subsetD)
           apply(rule_tac a=s in ImageI)
-           apply(erule_tac i=k and sq=sq2  in EnvCond_D, assumption+, simp, assumption)
-          apply assumption
-         apply simp
-        apply simp
+           apply(erule_tac i=l and sq="sq2@tl(drop i1 sq)"  in EnvCond_D, simp, assumption)
+            apply(subgoal_tac "(sq2 @ tl (drop i1 sq)) ! (l - Suc 0) = sq2 ! (l - Suc 0)")
+             apply simp
+            apply(subst nth_append, simp split: if_splits, clarsimp)
+           apply(subgoal_tac "(sq2 @ tl (drop i1 sq)) ! l = sq2!l")
+            apply simp
+           apply(subst nth_append, simp split: if_splits, clarsimp)
+         apply fastforce
+        apply fastforce
        apply simp
       apply simp
-     apply assumption
+     apply simp
+    apply(drule_tac x="i1 - i - 1" in spec, drule_tac P="i1 - i - 1 < length sq2" in mp, simp)
     apply clarsimp
-    apply(rule_tac x=i1 in exI, simp)
+    apply(drule_tac t="length sq2" in sym)
+    apply clarsimp
     apply(rule_tac x=True in exI, simp (no_asm))
    apply(case_tac "k=i1", clarsimp)
    apply(subgoal_tac "i1 + 1 \<le> k")
