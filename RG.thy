@@ -25,6 +25,11 @@ where "\<rho> \<Turnstile> {R, P} p {Q, G} =
 (EnvCond \<rho> R \<inter> InitCond \<rho> P \<inter> \<lbrakk>p\<rbrakk>\<^sub>\<rho> \<subseteq> TermCond \<rho> Q \<inter> ProgCond \<rho> G)"
 
 
+definition HoareTripleRG2 :: "(nat \<Rightarrow> 's LA) \<Rightarrow> 's staterel \<Rightarrow> 's staterel \<Rightarrow>  
+                              's LA \<Rightarrow>
+                              's staterel \<Rightarrow> 's staterel \<Rightarrow> bool"
+("_ \<Turnstile>\<^sub>2 {_ , _} _ {_ , _}" [40, 20, 20, 71, 20, 20] 71)
+where "\<rho> \<Turnstile>\<^sub>2 {R, P} p {Q, G} = (\<forall>\<sigma>. \<rho> \<Turnstile> {R, P `` {\<sigma>}} p {Q `` {\<sigma>}, G})" 
 
 
 lemma HoareTripleRG_subset_eq :
@@ -163,6 +168,30 @@ print_translation \<open>
   end
 \<close>
 
+
+syntax
+   "_rg2" :: "(nat \<Rightarrow> 's LA) \<Rightarrow> 's LA \<Rightarrow> 's staterel \<Rightarrow> 
+             's staterel \<Rightarrow> 's staterel \<Rightarrow> 's staterel \<Rightarrow> bool"  
+    ("(4_)/ \<Turnstile>\<^sub>2 _//RELY _//PRE _//POST _//GUAR _" [60,0,0,0,0] 45)
+translations
+"_rg2 \<rho> p R P Q G" \<rightharpoonup> "\<rho> \<Turnstile>\<^sub>2 {R, P} p {Q, G}"
+
+
+ML \<open> val syntax_debug = false \<close>
+print_translation \<open> let
+    fun rg2_tr (rho :: R :: P :: p :: Q :: G :: ts) =
+        let val _ = if syntax_debug then writeln "rg" else ()
+          in Syntax.const @{syntax_const "_rg2"} $
+               rho $ p $ R $ P $ Q $ G
+          end
+      | rg2_tr x = let val _ = writeln (@{make_string} {x = x})
+            in raise Match end;
+
+  in
+   [(@{const_syntax HoareTripleRG2}, K rg2_tr)]
+
+  end
+\<close>
 
 
 end

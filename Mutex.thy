@@ -296,6 +296,53 @@ lemma mutex :
   done
 
 
+section "Lifting the mutex-rule to state relations as pre/postconditions"
+
+lemma mutex2 :
+" \<rho> \<Turnstile>\<^sub>2 cs0 
+  RELY \<lbrace> \<ordmasculine>local0 = \<ordfeminine>local0 \<and> \<ordmasculine>shared = \<ordfeminine>shared \<rbrace>
+  PRE  \<lbrace> P0 \<ordmasculine>shared \<ordfeminine>shared \<rbrace>
+  POST \<lbrace> Q0 \<ordmasculine>shared \<ordfeminine>shared \<rbrace> 
+  GUAR \<lbrace> \<ordmasculine>flag0 = \<ordfeminine>flag0 \<and> \<ordmasculine>flag1 = \<ordfeminine>flag1 \<and> \<ordmasculine>turn = \<ordfeminine>turn \<and>   
+         \<ordmasculine>turn_aux0 = \<ordfeminine>turn_aux0 \<and> \<ordmasculine>turn_aux1 = \<ordfeminine>turn_aux1 \<and> \<ordmasculine>local1 = \<ordfeminine>local1 \<and>
+         (\<forall>v. P1 v \<ordmasculine>shared \<longrightarrow> P1 v \<ordfeminine>shared) \<and> (\<forall>v. Q1 v \<ordmasculine>shared \<longrightarrow> Q1 v \<ordfeminine>shared)  \<rbrace> \<Longrightarrow>
+
+  \<rho> \<Turnstile>\<^sub>2 cs1 
+  RELY \<lbrace> \<ordmasculine>local1 = \<ordfeminine>local1 \<and> \<ordmasculine>shared = \<ordfeminine>shared \<rbrace>
+  PRE  \<lbrace> P1 \<ordmasculine>shared \<ordfeminine>shared \<rbrace>
+  POST \<lbrace> Q1 \<ordmasculine>shared \<ordfeminine>shared \<rbrace> 
+  GUAR \<lbrace> \<ordmasculine>flag0 = \<ordfeminine>flag0 \<and> \<ordmasculine>flag1 = \<ordfeminine>flag1 \<and> \<ordmasculine>turn = \<ordfeminine>turn \<and>   
+         \<ordmasculine>turn_aux0 = \<ordfeminine>turn_aux0 \<and> \<ordmasculine>turn_aux1 = \<ordfeminine>turn_aux1 \<and> \<ordmasculine>local0 = \<ordfeminine>local0 \<and>
+         (\<forall>v. P0 v \<ordmasculine>shared \<longrightarrow> P0 v \<ordfeminine>shared) \<and> (\<forall>v. Q0 v \<ordmasculine>shared \<longrightarrow> Q0 v \<ordfeminine>shared)  \<rbrace> \<Longrightarrow>
+
+  \<rho> \<Turnstile> cs0 \<sqsupseteq>\<^bsub>mutexR0\<^esub> cs0 \<Longrightarrow>
+  \<rho> \<Turnstile> cs1 \<sqsupseteq>\<^bsub>mutexR1\<^esub> cs1 \<Longrightarrow>
+  \<rho> \<Turnstile> cs0 \<sqsupseteq>\<^bsub>mutexR\<^esub> cs0 \<Longrightarrow>
+  \<rho> \<Turnstile> cs1 \<sqsupseteq>\<^bsub>mutexR\<^esub> cs1 \<Longrightarrow>
+
+  \<rho> \<Turnstile>\<^sub>2 mutex cs0 cs1  
+  RELY Id 
+  PRE  \<lbrace> P0 \<ordmasculine>shared \<ordfeminine>shared \<and> P1 \<ordmasculine>shared \<ordfeminine>shared \<rbrace>
+  POST \<lbrace> Q0 \<ordmasculine>shared \<ordfeminine>shared \<and> Q1 \<ordmasculine>shared \<ordfeminine>shared \<rbrace>
+  GUAR \<lbrace> True \<rbrace>"
+  apply(subst HoareTripleRG2_def, clarify)
+  apply(subgoal_tac "\<lbrace> P0 \<ordmasculine>shared \<ordfeminine>shared \<and> P1 \<ordmasculine>shared \<ordfeminine>shared\<rbrace> `` {\<sigma>} =
+                     \<lbrace> P0 (shared \<sigma>) \<acute>shared \<and> P1 (shared \<sigma>) \<acute>shared \<rbrace>")
+   apply(subgoal_tac "\<lbrace> Q0 \<ordmasculine>shared \<ordfeminine>shared \<and> Q1 \<ordmasculine>shared \<ordfeminine>shared\<rbrace> `` {\<sigma>} =
+                      \<lbrace> Q0 (shared \<sigma>) \<acute>shared \<and> Q1 (shared \<sigma>) \<acute>shared \<rbrace>")
+    apply(erule ssubst)+
+    apply(subst (asm) HoareTripleRG2_def)+
+    apply(drule_tac x=\<sigma> in spec)+
+    apply(rule mutex)
+         apply(erule ConseqRG, rule subset_refl, clarsimp+)
+        apply(erule ConseqRG, rule subset_refl, clarsimp+)
+   apply(rule set_eqI, simp)+
+  done
+
+
+
+
+
 section "An example"
   
     
@@ -308,55 +355,65 @@ definition
   "shared_upd1 \<equiv> \<acute>local1 := \<acute>shared;
                  \<acute>local1 := {1} \<union> \<acute>local1;
                   \<acute>shared := \<acute>local1"
-  
-lemma shared_upd0 :
-"\<rho> \<Turnstile> shared_upd0
- RELY \<lbrace> \<ordmasculine>local0 = \<ordfeminine>local0 \<and> \<ordmasculine>shared = \<ordfeminine>shared \<rbrace>
-  PRE  UNIV
-  POST \<lbrace> 0 \<in> \<acute>shared \<rbrace> 
-  GUAR \<lbrace> \<ordmasculine>flag0 = \<ordfeminine>flag0 \<and> \<ordmasculine>flag1 = \<ordfeminine>flag1 \<and> \<ordmasculine>turn = \<ordfeminine>turn \<and>   
-         \<ordmasculine>turn_aux0 = \<ordfeminine>turn_aux0 \<and> \<ordmasculine>turn_aux1 = \<ordfeminine>turn_aux1 \<and> \<ordmasculine>local1 = \<ordfeminine>local1 \<and>
-         ((1 \<in> \<ordmasculine>shared) \<longrightarrow> (1 \<in> \<ordfeminine>shared)) \<rbrace> " 
-  unfolding shared_upd0_def
-  by rg_tac
 
-lemma shared_upd1 :
-"\<rho> \<Turnstile> shared_upd1
- RELY \<lbrace> \<ordmasculine>local1 = \<ordfeminine>local1 \<and> \<ordmasculine>shared = \<ordfeminine>shared \<rbrace>
-  PRE  UNIV
-  POST \<lbrace> 1 \<in> \<acute>shared \<rbrace> 
-  GUAR \<lbrace> \<ordmasculine>flag0 = \<ordfeminine>flag0 \<and> \<ordmasculine>flag1 = \<ordfeminine>flag1 \<and> \<ordmasculine>turn = \<ordfeminine>turn \<and>   
-         \<ordmasculine>turn_aux0 = \<ordfeminine>turn_aux0 \<and> \<ordmasculine>turn_aux1 = \<ordfeminine>turn_aux1 \<and> \<ordmasculine>local0 = \<ordfeminine>local0 \<and>
-         ((0 \<in> \<ordmasculine>shared) \<longrightarrow> (0 \<in> \<ordfeminine>shared)) \<rbrace> " 
-  unfolding shared_upd1_def
-  by rg_tac
 
-   
-
-    
 definition
   "concurrent_upds \<equiv> mutex shared_upd0 shared_upd1" 
-    
 
-lemma concurrent_upds[simplified] :
-"\<rho> \<Turnstile> concurrent_upds
+
+lemma shared_upd0 :
+"\<rho> \<Turnstile>\<^sub>2 shared_upd0
+ RELY \<lbrace> \<ordmasculine>local0 = \<ordfeminine>local0 \<and> \<ordmasculine>shared = \<ordfeminine>shared \<rbrace>
+  PRE  \<lbrace> \<ordmasculine>shared \<subseteq> \<ordfeminine>shared \<rbrace> 
+  POST \<lbrace> 0 \<in> \<ordfeminine>shared \<and> \<ordmasculine>shared \<subseteq> \<ordfeminine>shared \<rbrace> 
+  GUAR \<lbrace> \<ordmasculine>flag0 = \<ordfeminine>flag0 \<and> \<ordmasculine>flag1 = \<ordfeminine>flag1 \<and> \<ordmasculine>turn = \<ordfeminine>turn \<and>   
+         \<ordmasculine>turn_aux0 = \<ordfeminine>turn_aux0 \<and> \<ordmasculine>turn_aux1 = \<ordfeminine>turn_aux1 \<and> \<ordmasculine>local1 = \<ordfeminine>local1 \<and>
+         \<ordmasculine>shared \<subseteq> \<ordfeminine>shared \<rbrace> " 
+  unfolding shared_upd0_def HoareTripleRG2_def
+  by(clarify, rg_tac, fast+)
+
+
+lemma shared_upd1 :
+"\<rho> \<Turnstile>\<^sub>2 shared_upd1
+ RELY \<lbrace> \<ordmasculine>local1 = \<ordfeminine>local1 \<and> \<ordmasculine>shared = \<ordfeminine>shared \<rbrace>
+  PRE  \<lbrace> \<ordmasculine>shared \<subseteq> \<ordfeminine>shared \<rbrace>
+  POST \<lbrace> 1 \<in> \<ordfeminine>shared \<and> \<ordmasculine>shared \<subseteq> \<ordfeminine>shared \<rbrace> 
+  GUAR \<lbrace> \<ordmasculine>flag0 = \<ordfeminine>flag0 \<and> \<ordmasculine>flag1 = \<ordfeminine>flag1 \<and> \<ordmasculine>turn = \<ordfeminine>turn \<and>   
+         \<ordmasculine>turn_aux0 = \<ordfeminine>turn_aux0 \<and> \<ordmasculine>turn_aux1 = \<ordfeminine>turn_aux1 \<and> \<ordmasculine>local0 = \<ordfeminine>local0 \<and>
+         \<ordmasculine>shared \<subseteq> \<ordfeminine>shared \<rbrace> " 
+  unfolding shared_upd1_def HoareTripleRG2_def
+  by(clarify, rg_tac, fast+)
+ 
+
+   
+lemma concurrent_upds' :
+"\<rho> \<Turnstile>\<^sub>2 concurrent_upds
   RELY Id
-  PRE  \<lbrace> True \<and> True \<rbrace>
-  POST \<lbrace> (0 \<in> \<acute>shared) \<and> (1 \<in> \<acute>shared) \<rbrace>
+  PRE  \<lbrace> \<ordmasculine>shared \<subseteq> \<ordfeminine>shared \<and> \<ordmasculine>shared \<subseteq> \<ordfeminine>shared \<rbrace>
+  POST \<lbrace> (0 \<in> \<ordfeminine>shared \<and> \<ordmasculine>shared \<subseteq> \<ordfeminine>shared) \<and> 
+         (1 \<in> \<ordfeminine>shared \<and> \<ordmasculine>shared \<subseteq> \<ordfeminine>shared ) \<rbrace>
   GUAR \<lbrace> True \<rbrace>"
   unfolding concurrent_upds_def
-  apply(rule mutex)
-       apply(simp, rule shared_upd0)
-      apply(simp, rule shared_upd1)
+  apply(rule mutex2)
+       apply(rule ConseqRG2[OF shared_upd0], simp_all, clarsimp, rule conjI, fast, fast)
+      apply(rule ConseqRG2[OF shared_upd1], simp_all, clarsimp, rule conjI, fast, fast)
      apply(simp_all add: shared_upd0_def shared_upd1_def mutexR0_def mutexR1_def mutexR_def 
            cond0_def cond1_def)
      apply plain_prog_corr_tac+
   done
 
+corollary concurrent_upds :
+"\<rho> \<Turnstile>\<^sub>2 concurrent_upds
+  RELY Id
+  PRE  Id
+  POST \<lbrace> 0 \<in> \<ordfeminine>shared \<and> 1 \<in> \<ordfeminine>shared \<and> \<ordmasculine>shared \<subseteq> \<ordfeminine>shared \<rbrace>
+  GUAR \<lbrace> True \<rbrace>"
+  by(rule ConseqRG2[OF concurrent_upds'], clarsimp+)
 
 
 
-section "Deriving the global guarantees, relevant for liveness"
+
+section "Deriving the global guarantees relevant for liveness"
 
 
 definition 
@@ -372,7 +429,7 @@ definition
 text "Note that the rely condition \<ordmasculine>flag0 = \<ordfeminine>flag0 in thread0_auxG below
       is solely due to the annotations in the definition of thread0_aux 
       which are too detailed for the current setting. 
-      This condition could be simply discarded if the annotations would be 
+      This condition could be simply discarded if the annotations are 
       adjusted accordingly."
  
 lemma thread0_auxG:

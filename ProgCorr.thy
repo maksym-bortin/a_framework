@@ -1303,6 +1303,15 @@ corollary ConseqRG:
   by fast+
 
 
+corollary ConseqRG2: 
+"\<rho> \<Turnstile>\<^sub>2 {R, S} p {T, G}  \<Longrightarrow> 
+ R' \<subseteq> R \<Longrightarrow> S' \<subseteq> S \<Longrightarrow> T \<subseteq> T' \<Longrightarrow> G \<subseteq> G' \<Longrightarrow>
+ \<rho> \<Turnstile>\<^sub>2 {R', S'} p {T', G'}"
+  apply(clarsimp simp: HoareTripleRG2_def)
+  apply(drule_tac x=\<sigma> in spec)
+  by(erule ConseqRG, simp_all, fast+)
+
+
 
 
 section "Plain syntax-directed tactic for program correspondences"
