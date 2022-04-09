@@ -411,59 +411,57 @@ corollary concurrent_upds :
   by(rule ConseqRG2[OF concurrent_upds'], clarsimp+)
 
 
-text "A slight variation of this property which will be derived below is:
-         if the initial value of shared contains neither 0 nor 1 then
-         its output value contains 0 and 1 and is strictly a superset."  
+text "A more accurate description of @{term concurrent_upds} behaviour is that 
+      the output value of shared is obtained by inserting 0 and 1 into 
+      its initial value."  
 
-lemma shared_upd0_strict :
+lemma shared_upd0_eq :
 "\<rho> \<Turnstile>\<^sub>2 shared_upd0
  RELY \<lbrace> \<ordmasculine>local0 = \<ordfeminine>local0 \<and> \<ordmasculine>shared = \<ordfeminine>shared \<rbrace>
-  PRE  \<lbrace> \<ordmasculine>shared \<subseteq> \<ordfeminine>shared \<rbrace> 
-  POST \<lbrace> 0 \<in> \<ordfeminine>shared \<and> (0 \<notin> \<ordmasculine>shared \<longrightarrow> \<ordmasculine>shared \<subset> \<ordfeminine>shared) \<rbrace> 
+  PRE  \<lbrace> \<ordmasculine>shared = \<ordfeminine>shared \<or> \<ordmasculine>shared \<union> {1} = \<ordfeminine>shared \<rbrace> 
+  POST \<lbrace> (\<ordfeminine>shared = \<ordmasculine>shared \<union> {0} \<or> \<ordfeminine>shared = \<ordmasculine>shared \<union> {0} \<union> {1}) \<rbrace> 
   GUAR \<lbrace> \<ordmasculine>flag0 = \<ordfeminine>flag0 \<and> \<ordmasculine>flag1 = \<ordfeminine>flag1 \<and> \<ordmasculine>turn = \<ordfeminine>turn \<and>   
          \<ordmasculine>turn_aux0 = \<ordfeminine>turn_aux0 \<and> \<ordmasculine>turn_aux1 = \<ordfeminine>turn_aux1 \<and> \<ordmasculine>local1 = \<ordfeminine>local1 \<and>
-         \<ordmasculine>shared \<subseteq> \<ordfeminine>shared \<rbrace> " 
+         (\<ordmasculine>shared = \<ordfeminine>shared \<or> \<ordmasculine>shared \<union> {0} = \<ordfeminine>shared) \<rbrace> " 
   unfolding shared_upd0_def HoareTripleRG2_def
-  by(clarify, rg_tac, fastforce+)
+  by(clarify, rg_tac, fast)
 
-
-lemma shared_upd1_strict :
+lemma shared_upd1_eq :
 "\<rho> \<Turnstile>\<^sub>2 shared_upd1
  RELY \<lbrace> \<ordmasculine>local1 = \<ordfeminine>local1 \<and> \<ordmasculine>shared = \<ordfeminine>shared \<rbrace>
-  PRE  \<lbrace> \<ordmasculine>shared \<subseteq> \<ordfeminine>shared \<rbrace>
-  POST \<lbrace> 1 \<in> \<ordfeminine>shared \<and> (1 \<notin> \<ordmasculine>shared \<longrightarrow> \<ordmasculine>shared \<subset> \<ordfeminine>shared) \<rbrace> 
+  PRE  \<lbrace> \<ordmasculine>shared = \<ordfeminine>shared \<or> \<ordmasculine>shared \<union> {0} = \<ordfeminine>shared \<rbrace>
+  POST \<lbrace> (\<ordfeminine>shared = \<ordmasculine>shared \<union> {1} \<or> \<ordfeminine>shared = \<ordmasculine>shared \<union> {0} \<union> {1}) \<rbrace> 
   GUAR \<lbrace> \<ordmasculine>flag0 = \<ordfeminine>flag0 \<and> \<ordmasculine>flag1 = \<ordfeminine>flag1 \<and> \<ordmasculine>turn = \<ordfeminine>turn \<and>   
          \<ordmasculine>turn_aux0 = \<ordfeminine>turn_aux0 \<and> \<ordmasculine>turn_aux1 = \<ordfeminine>turn_aux1 \<and> \<ordmasculine>local0 = \<ordfeminine>local0 \<and>
-         \<ordmasculine>shared \<subseteq> \<ordfeminine>shared \<rbrace> " 
+         (\<ordmasculine>shared = \<ordfeminine>shared \<or> \<ordmasculine>shared \<union> {1} = \<ordfeminine>shared) \<rbrace> " 
   unfolding shared_upd1_def HoareTripleRG2_def
-  by(clarify, rg_tac, fastforce+)
- 
+  by(clarify, rg_tac, fast)
 
-   
-lemma concurrent_upds'_strict :
+
+lemma concurrent_upds'_eq :
 "\<rho> \<Turnstile>\<^sub>2 concurrent_upds
   RELY Id
-  PRE  \<lbrace> \<ordmasculine>shared \<subseteq> \<ordfeminine>shared \<and> \<ordmasculine>shared \<subseteq> \<ordfeminine>shared \<rbrace>
-  POST \<lbrace> (0 \<in> \<ordfeminine>shared \<and> (0 \<notin> \<ordmasculine>shared \<longrightarrow> \<ordmasculine>shared \<subset> \<ordfeminine>shared)) \<and> 
-         (1 \<in> \<ordfeminine>shared \<and> (1 \<notin> \<ordmasculine>shared \<longrightarrow> \<ordmasculine>shared \<subset> \<ordfeminine>shared)) \<rbrace>
+  PRE  \<lbrace> (\<ordmasculine>shared = \<ordfeminine>shared \<or> \<ordmasculine>shared \<union> {1} = \<ordfeminine>shared) \<and> 
+         (\<ordmasculine>shared = \<ordfeminine>shared \<or> \<ordmasculine>shared \<union> {0} = \<ordfeminine>shared) \<rbrace>
+  POST \<lbrace> (\<ordfeminine>shared = \<ordmasculine>shared \<union> {0} \<or> \<ordfeminine>shared = \<ordmasculine>shared \<union> {0} \<union> {1}) \<and>
+         (\<ordfeminine>shared = \<ordmasculine>shared \<union> {1} \<or> \<ordfeminine>shared = \<ordmasculine>shared \<union> {0} \<union> {1}) \<rbrace>
   GUAR \<lbrace> True \<rbrace>"
   unfolding concurrent_upds_def
   apply(rule mutex2)
-       apply(rule ConseqRG2[OF shared_upd0_strict], simp_all, clarsimp, rule conjI, fast, blast)
-      apply(rule ConseqRG2[OF shared_upd1_strict], simp_all, clarsimp, rule conjI, fast, blast)
+       apply(rule ConseqRG2[OF shared_upd0_eq], simp_all, clarsimp, rule conjI, blast, blast)
+      apply(rule ConseqRG2[OF shared_upd1_eq], simp_all, clarsimp, rule conjI, blast, blast)
      apply(simp_all add: shared_upd0_def shared_upd1_def mutexR0_def mutexR1_def mutexR_def 
            cond0_def cond1_def)
      apply plain_prog_corr_tac+
   done
 
-
-corollary concurrent_upds_strict :
+corollary concurrent_upds_eq :
 "\<rho> \<Turnstile>\<^sub>2 concurrent_upds
   RELY Id
   PRE  Id
-  POST \<lbrace> 0 \<in> \<ordfeminine>shared \<and> 1 \<in> \<ordfeminine>shared \<and> (0 \<notin> \<ordmasculine>shared \<longrightarrow> \<ordmasculine>shared \<subset> \<ordfeminine>shared) \<rbrace>
+  POST \<lbrace> \<ordmasculine>shared \<union> {0, 1} = \<ordfeminine>shared \<rbrace>
   GUAR \<lbrace> True \<rbrace>"
-  by(rule ConseqRG2[OF concurrent_upds'_strict], clarsimp+)
+  by(rule ConseqRG2[OF concurrent_upds'_eq], clarsimp+, blast, simp)
 
 
 
