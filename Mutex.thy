@@ -122,7 +122,7 @@ definition "mutexR0 = {((s :: ('a, 'b) mutex_scheme), (t :: ('a, 'b) mutex_schem
                        turn_aux0 t \<and> flag0 t \<and> cond0 t \<and> s = t}"  
 
 lemma thread0_aux:
-" \<rho> \<Turnstile> cs0 
+" \<Turnstile> cs0 
   RELY \<lbrace> \<ordmasculine>local0 = \<ordfeminine>local0 \<and> \<ordmasculine>shared = \<ordfeminine>shared \<rbrace>
   PRE  \<lbrace> P0 \<acute>shared \<rbrace>
   POST \<lbrace> Q0 \<acute>shared \<rbrace> 
@@ -130,9 +130,9 @@ lemma thread0_aux:
          \<ordmasculine>turn_aux0 = \<ordfeminine>turn_aux0 \<and> \<ordmasculine>turn_aux1 = \<ordfeminine>turn_aux1 \<and> \<ordmasculine>local1 = \<ordfeminine>local1 \<and>
          (P1 \<ordmasculine>shared \<longrightarrow> P1 \<ordfeminine>shared) \<and> (Q1 \<ordmasculine>shared \<longrightarrow> Q1 \<ordfeminine>shared)  \<rbrace> \<Longrightarrow>
 
- \<rho> \<Turnstile> cs0 \<sqsupseteq>\<^bsub>mutexR0\<^esub> cs0 \<Longrightarrow>
+ \<Turnstile> cs0 \<sqsupseteq>\<^bsub>mutexR0\<^esub> cs0 \<Longrightarrow>
 
- \<rho> \<Turnstile> thread0_aux cs0 P0 
+ \<Turnstile> thread0_aux cs0 P0 
  RELY \<lbrace> \<ordmasculine>flag0 = \<ordfeminine>flag0 \<and> \<ordmasculine>turn_aux0 = \<ordfeminine>turn_aux0 \<and> \<ordmasculine>local0 = \<ordfeminine>local0 \<and>
         (\<ordmasculine>turn_aux0 \<longrightarrow> \<ordmasculine>flag0 \<longrightarrow> \<ordmasculine>cond0 \<longrightarrow> \<ordmasculine>shared = \<ordfeminine>shared) \<and>
         (\<ordmasculine>cond0 \<longrightarrow> \<ordfeminine>cond0) \<and> 
@@ -168,7 +168,7 @@ definition "mutexR1 = {((s :: ('a, 'b) mutex_scheme), (t :: ('a, 'b) mutex_schem
                        s = t \<and> turn_aux1 t \<and> flag1 t \<and> cond1 t}"  
     
 lemma thread1_aux:
-" \<rho> \<Turnstile> cs1 
+" \<Turnstile> cs1 
   RELY \<lbrace> \<ordmasculine>local1 = \<ordfeminine>local1 \<and> \<ordmasculine>shared = \<ordfeminine>shared \<rbrace>
   PRE  \<lbrace> P1 \<acute>shared \<rbrace>
   POST \<lbrace> Q1 \<acute>shared \<rbrace> 
@@ -176,9 +176,9 @@ lemma thread1_aux:
          \<ordmasculine>turn_aux0 = \<ordfeminine>turn_aux0 \<and> \<ordmasculine>turn_aux1 = \<ordfeminine>turn_aux1 \<and> \<ordmasculine>local0 = \<ordfeminine>local0 \<and>
          (P0 \<ordmasculine>shared \<longrightarrow> P0 \<ordfeminine>shared) \<and> (Q0 \<ordmasculine>shared \<longrightarrow> Q0 \<ordfeminine>shared)  \<rbrace> \<Longrightarrow>
 
- \<rho> \<Turnstile> cs1 \<sqsupseteq>\<^bsub>mutexR1\<^esub> cs1 \<Longrightarrow>
+ \<Turnstile> cs1 \<sqsupseteq>\<^bsub>mutexR1\<^esub> cs1 \<Longrightarrow>
 
- \<rho> \<Turnstile> thread1_aux cs1 P1 
+ \<Turnstile> thread1_aux cs1 P1 
  RELY \<lbrace> \<ordmasculine>flag1 = \<ordfeminine>flag1 \<and> \<ordmasculine>turn_aux1 = \<ordfeminine>turn_aux1 \<and> \<ordmasculine>local1 = \<ordfeminine>local1 \<and>
         (\<ordmasculine>turn_aux1 \<longrightarrow> \<ordmasculine>flag1 \<longrightarrow> \<ordmasculine>cond1 \<longrightarrow> \<ordmasculine>shared = \<ordfeminine>shared) \<and>
         (\<ordmasculine>cond1 \<longrightarrow> \<ordfeminine>cond1) \<and> 
@@ -211,7 +211,7 @@ lemma thread1_aux:
 
     
 lemma mutex_aux :
-" \<rho> \<Turnstile> cs0 
+" \<Turnstile> cs0 
   RELY \<lbrace> \<ordmasculine>local0 = \<ordfeminine>local0 \<and> \<ordmasculine>shared = \<ordfeminine>shared \<rbrace>
   PRE  \<lbrace> P0 \<acute>shared \<rbrace>
   POST \<lbrace> Q0 \<acute>shared \<rbrace> 
@@ -219,7 +219,7 @@ lemma mutex_aux :
          \<ordmasculine>turn_aux0 = \<ordfeminine>turn_aux0 \<and> \<ordmasculine>turn_aux1 = \<ordfeminine>turn_aux1 \<and> \<ordmasculine>local1 = \<ordfeminine>local1 \<and>
          (P1 \<ordmasculine>shared \<longrightarrow> P1 \<ordfeminine>shared) \<and> (Q1 \<ordmasculine>shared \<longrightarrow> Q1 \<ordfeminine>shared)  \<rbrace> \<Longrightarrow>
 
-  \<rho> \<Turnstile> cs1 
+  \<Turnstile> cs1 
   RELY \<lbrace> \<ordmasculine>local1 = \<ordfeminine>local1 \<and> \<ordmasculine>shared = \<ordfeminine>shared \<rbrace>
   PRE  \<lbrace> P1 \<acute>shared \<rbrace>
   POST \<lbrace> Q1 \<acute>shared \<rbrace> 
@@ -227,10 +227,10 @@ lemma mutex_aux :
          \<ordmasculine>turn_aux0 = \<ordfeminine>turn_aux0 \<and> \<ordmasculine>turn_aux1 = \<ordfeminine>turn_aux1 \<and> \<ordmasculine>local0 = \<ordfeminine>local0 \<and>
          (P0 \<ordmasculine>shared \<longrightarrow> P0 \<ordfeminine>shared) \<and> (Q0 \<ordmasculine>shared \<longrightarrow> Q0 \<ordfeminine>shared)  \<rbrace> \<Longrightarrow>
 
-  \<rho> \<Turnstile> cs0 \<sqsupseteq>\<^bsub>mutexR0\<^esub> cs0 \<Longrightarrow>
-  \<rho> \<Turnstile> cs1 \<sqsupseteq>\<^bsub>mutexR1\<^esub> cs1 \<Longrightarrow>
+  \<Turnstile> cs0 \<sqsupseteq>\<^bsub>mutexR0\<^esub> cs0 \<Longrightarrow>
+  \<Turnstile> cs1 \<sqsupseteq>\<^bsub>mutexR1\<^esub> cs1 \<Longrightarrow>
 
-  \<rho> \<Turnstile> mutex_aux P0 cs0 Q0 P1 cs1 Q1  
+  \<Turnstile> mutex_aux P0 cs0 Q0 P1 cs1 Q1  
   RELY Id
   PRE  \<lbrace> P0 \<acute>shared \<and> P1 \<acute>shared \<and> \<not> \<acute>turn_aux0 \<and> \<not> \<acute>turn_aux1  \<rbrace>
   POST \<lbrace> Q0 \<acute>shared \<and> Q1 \<acute>shared \<rbrace>
@@ -255,7 +255,7 @@ definition "mutexR = {((s :: ('a, 'b) mutex_scheme), (t :: ('a, 'b) mutex_scheme
  
   
 lemma mutex :
-" \<rho> \<Turnstile> cs0 
+" \<Turnstile> cs0 
   RELY \<lbrace> \<ordmasculine>local0 = \<ordfeminine>local0 \<and> \<ordmasculine>shared = \<ordfeminine>shared \<rbrace>
   PRE  \<lbrace> P0 \<acute>shared \<rbrace>
   POST \<lbrace> Q0 \<acute>shared \<rbrace> 
@@ -263,7 +263,7 @@ lemma mutex :
          \<ordmasculine>turn_aux0 = \<ordfeminine>turn_aux0 \<and> \<ordmasculine>turn_aux1 = \<ordfeminine>turn_aux1 \<and> \<ordmasculine>local1 = \<ordfeminine>local1 \<and>
          (P1 \<ordmasculine>shared \<longrightarrow> P1 \<ordfeminine>shared) \<and> (Q1 \<ordmasculine>shared \<longrightarrow> Q1 \<ordfeminine>shared)  \<rbrace> \<Longrightarrow>
 
-  \<rho> \<Turnstile> cs1 
+  \<Turnstile> cs1 
   RELY \<lbrace> \<ordmasculine>local1 = \<ordfeminine>local1 \<and> \<ordmasculine>shared = \<ordfeminine>shared \<rbrace>
   PRE  \<lbrace> P1 \<acute>shared \<rbrace>
   POST \<lbrace> Q1 \<acute>shared \<rbrace> 
@@ -271,12 +271,12 @@ lemma mutex :
          \<ordmasculine>turn_aux0 = \<ordfeminine>turn_aux0 \<and> \<ordmasculine>turn_aux1 = \<ordfeminine>turn_aux1 \<and> \<ordmasculine>local0 = \<ordfeminine>local0 \<and>
          (P0 \<ordmasculine>shared \<longrightarrow> P0 \<ordfeminine>shared) \<and> (Q0 \<ordmasculine>shared \<longrightarrow> Q0 \<ordfeminine>shared)  \<rbrace> \<Longrightarrow>
 
-  \<rho> \<Turnstile> cs0 \<sqsupseteq>\<^bsub>mutexR0\<^esub> cs0 \<Longrightarrow>
-  \<rho> \<Turnstile> cs1 \<sqsupseteq>\<^bsub>mutexR1\<^esub> cs1 \<Longrightarrow>
-  \<rho> \<Turnstile> cs0 \<sqsupseteq>\<^bsub>mutexR\<^esub> cs0 \<Longrightarrow>
-  \<rho> \<Turnstile> cs1 \<sqsupseteq>\<^bsub>mutexR\<^esub> cs1 \<Longrightarrow>
+  \<Turnstile> cs0 \<sqsupseteq>\<^bsub>mutexR0\<^esub> cs0 \<Longrightarrow>
+  \<Turnstile> cs1 \<sqsupseteq>\<^bsub>mutexR1\<^esub> cs1 \<Longrightarrow>
+  \<Turnstile> cs0 \<sqsupseteq>\<^bsub>mutexR\<^esub> cs0 \<Longrightarrow>
+  \<Turnstile> cs1 \<sqsupseteq>\<^bsub>mutexR\<^esub> cs1 \<Longrightarrow>
 
-  \<rho> \<Turnstile> mutex cs0 cs1  
+  \<Turnstile> mutex cs0 cs1  
   RELY Id 
   PRE  \<lbrace> P0 \<acute>shared \<and> P1 \<acute>shared \<rbrace>
   POST \<lbrace> Q0 \<acute>shared \<and> Q1 \<acute>shared \<rbrace>
@@ -299,7 +299,7 @@ lemma mutex :
 section "Lifting the mutex-rule to state relations as pre/postconditions"
 
 lemma mutex2 :
-" \<rho> \<Turnstile>\<^sub>2 cs0 
+" \<Turnstile>\<^sub>2 cs0 
   RELY \<lbrace> \<ordmasculine>local0 = \<ordfeminine>local0 \<and> \<ordmasculine>shared = \<ordfeminine>shared \<rbrace>
   PRE  \<lbrace> P0 \<ordmasculine>shared \<ordfeminine>shared \<rbrace>
   POST \<lbrace> Q0 \<ordmasculine>shared \<ordfeminine>shared \<rbrace> 
@@ -307,7 +307,7 @@ lemma mutex2 :
          \<ordmasculine>turn_aux0 = \<ordfeminine>turn_aux0 \<and> \<ordmasculine>turn_aux1 = \<ordfeminine>turn_aux1 \<and> \<ordmasculine>local1 = \<ordfeminine>local1 \<and>
          (\<forall>v. P1 v \<ordmasculine>shared \<longrightarrow> P1 v \<ordfeminine>shared) \<and> (\<forall>v. Q1 v \<ordmasculine>shared \<longrightarrow> Q1 v \<ordfeminine>shared)  \<rbrace> \<Longrightarrow>
 
-  \<rho> \<Turnstile>\<^sub>2 cs1 
+  \<Turnstile>\<^sub>2 cs1 
   RELY \<lbrace> \<ordmasculine>local1 = \<ordfeminine>local1 \<and> \<ordmasculine>shared = \<ordfeminine>shared \<rbrace>
   PRE  \<lbrace> P1 \<ordmasculine>shared \<ordfeminine>shared \<rbrace>
   POST \<lbrace> Q1 \<ordmasculine>shared \<ordfeminine>shared \<rbrace> 
@@ -315,12 +315,12 @@ lemma mutex2 :
          \<ordmasculine>turn_aux0 = \<ordfeminine>turn_aux0 \<and> \<ordmasculine>turn_aux1 = \<ordfeminine>turn_aux1 \<and> \<ordmasculine>local0 = \<ordfeminine>local0 \<and>
          (\<forall>v. P0 v \<ordmasculine>shared \<longrightarrow> P0 v \<ordfeminine>shared) \<and> (\<forall>v. Q0 v \<ordmasculine>shared \<longrightarrow> Q0 v \<ordfeminine>shared)  \<rbrace> \<Longrightarrow>
 
-  \<rho> \<Turnstile> cs0 \<sqsupseteq>\<^bsub>mutexR0\<^esub> cs0 \<Longrightarrow>
-  \<rho> \<Turnstile> cs1 \<sqsupseteq>\<^bsub>mutexR1\<^esub> cs1 \<Longrightarrow>
-  \<rho> \<Turnstile> cs0 \<sqsupseteq>\<^bsub>mutexR\<^esub> cs0 \<Longrightarrow>
-  \<rho> \<Turnstile> cs1 \<sqsupseteq>\<^bsub>mutexR\<^esub> cs1 \<Longrightarrow>
+  \<Turnstile> cs0 \<sqsupseteq>\<^bsub>mutexR0\<^esub> cs0 \<Longrightarrow>
+  \<Turnstile> cs1 \<sqsupseteq>\<^bsub>mutexR1\<^esub> cs1 \<Longrightarrow>
+  \<Turnstile> cs0 \<sqsupseteq>\<^bsub>mutexR\<^esub> cs0 \<Longrightarrow>
+  \<Turnstile> cs1 \<sqsupseteq>\<^bsub>mutexR\<^esub> cs1 \<Longrightarrow>
 
-  \<rho> \<Turnstile>\<^sub>2 mutex cs0 cs1  
+  \<Turnstile>\<^sub>2 mutex cs0 cs1  
   RELY Id 
   PRE  \<lbrace> P0 \<ordmasculine>shared \<ordfeminine>shared \<and> P1 \<ordmasculine>shared \<ordfeminine>shared \<rbrace>
   POST \<lbrace> Q0 \<ordmasculine>shared \<ordfeminine>shared \<and> Q1 \<ordmasculine>shared \<ordfeminine>shared \<rbrace>
@@ -348,12 +348,12 @@ section "An example"
     
 definition
   "shared_upd0 \<equiv> \<acute>local0 := \<acute>shared;
-                 \<acute>local0 := {0::int} \<union> \<acute>local0;
+                  \<acute>local0 := {0::int} \<union> \<acute>local0;
                   \<acute>shared := \<acute>local0"
         
 definition
   "shared_upd1 \<equiv> \<acute>local1 := \<acute>shared;
-                 \<acute>local1 := {1::int} \<union> \<acute>local1;
+                  \<acute>local1 := {1::int} \<union> \<acute>local1;
                   \<acute>shared := \<acute>local1"
 
 
@@ -362,7 +362,7 @@ definition
 
 
 lemma shared_upd0 :
-"\<rho> \<Turnstile>\<^sub>2 shared_upd0
+"\<Turnstile>\<^sub>2 shared_upd0
  RELY \<lbrace> \<ordmasculine>local0 = \<ordfeminine>local0 \<and> \<ordmasculine>shared = \<ordfeminine>shared \<rbrace>
   PRE  \<lbrace> \<ordmasculine>shared \<subseteq> \<ordfeminine>shared \<rbrace> 
   POST \<lbrace> 0 \<in> \<ordfeminine>shared \<and> \<ordmasculine>shared \<subseteq> \<ordfeminine>shared \<rbrace> 
@@ -374,7 +374,7 @@ lemma shared_upd0 :
 
 
 lemma shared_upd1 :
-"\<rho> \<Turnstile>\<^sub>2 shared_upd1
+"\<Turnstile>\<^sub>2 shared_upd1
  RELY \<lbrace> \<ordmasculine>local1 = \<ordfeminine>local1 \<and> \<ordmasculine>shared = \<ordfeminine>shared \<rbrace>
   PRE  \<lbrace> \<ordmasculine>shared \<subseteq> \<ordfeminine>shared \<rbrace>
   POST \<lbrace> 1 \<in> \<ordfeminine>shared \<and> \<ordmasculine>shared \<subseteq> \<ordfeminine>shared \<rbrace> 
@@ -387,7 +387,7 @@ lemma shared_upd1 :
 
    
 lemma concurrent_upds' :
-"\<rho> \<Turnstile>\<^sub>2 concurrent_upds
+"\<Turnstile>\<^sub>2 concurrent_upds
   RELY Id
   PRE  \<lbrace> \<ordmasculine>shared \<subseteq> \<ordfeminine>shared \<and> \<ordmasculine>shared \<subseteq> \<ordfeminine>shared \<rbrace>
   POST \<lbrace> (0 \<in> \<ordfeminine>shared \<and> \<ordmasculine>shared \<subseteq> \<ordfeminine>shared) \<and> 
@@ -403,7 +403,7 @@ lemma concurrent_upds' :
   done
 
 corollary concurrent_upds :
-"\<rho> \<Turnstile>\<^sub>2 concurrent_upds
+"\<Turnstile>\<^sub>2 concurrent_upds
   RELY Id
   PRE  Id
   POST \<lbrace> 0 \<in> \<ordfeminine>shared \<and> 1 \<in> \<ordfeminine>shared \<and> \<ordmasculine>shared \<subseteq> \<ordfeminine>shared \<rbrace>
@@ -416,7 +416,7 @@ text "A more accurate description of @{term concurrent_upds} behaviour is that
       its initial value."  
 
 lemma shared_upd0_eq :
-"\<rho> \<Turnstile>\<^sub>2 shared_upd0
+"\<Turnstile>\<^sub>2 shared_upd0
  RELY \<lbrace> \<ordmasculine>local0 = \<ordfeminine>local0 \<and> \<ordmasculine>shared = \<ordfeminine>shared \<rbrace>
   PRE  \<lbrace> \<ordmasculine>shared = \<ordfeminine>shared \<or> \<ordmasculine>shared \<union> {1} = \<ordfeminine>shared \<rbrace> 
   POST \<lbrace> (\<ordfeminine>shared = \<ordmasculine>shared \<union> {0} \<or> \<ordfeminine>shared = \<ordmasculine>shared \<union> {0} \<union> {1}) \<rbrace> 
@@ -427,7 +427,7 @@ lemma shared_upd0_eq :
   by(clarify, rg_tac, fast)
 
 lemma shared_upd1_eq :
-"\<rho> \<Turnstile>\<^sub>2 shared_upd1
+"\<Turnstile>\<^sub>2 shared_upd1
  RELY \<lbrace> \<ordmasculine>local1 = \<ordfeminine>local1 \<and> \<ordmasculine>shared = \<ordfeminine>shared \<rbrace>
   PRE  \<lbrace> \<ordmasculine>shared = \<ordfeminine>shared \<or> \<ordmasculine>shared \<union> {0} = \<ordfeminine>shared \<rbrace>
   POST \<lbrace> (\<ordfeminine>shared = \<ordmasculine>shared \<union> {1} \<or> \<ordfeminine>shared = \<ordmasculine>shared \<union> {0} \<union> {1}) \<rbrace> 
@@ -439,7 +439,7 @@ lemma shared_upd1_eq :
 
 
 lemma concurrent_upds'_eq :
-"\<rho> \<Turnstile>\<^sub>2 concurrent_upds
+"\<Turnstile>\<^sub>2 concurrent_upds
   RELY Id
   PRE  \<lbrace> (\<ordmasculine>shared = \<ordfeminine>shared \<or> \<ordmasculine>shared \<union> {1} = \<ordfeminine>shared) \<and> 
          (\<ordmasculine>shared = \<ordfeminine>shared \<or> \<ordmasculine>shared \<union> {0} = \<ordfeminine>shared) \<rbrace>
@@ -456,7 +456,7 @@ lemma concurrent_upds'_eq :
   done
 
 corollary concurrent_upds_eq :
-"\<rho> \<Turnstile>\<^sub>2 concurrent_upds
+"\<Turnstile>\<^sub>2 concurrent_upds
   RELY Id
   PRE  Id
   POST \<lbrace> \<ordmasculine>shared \<union> {0, 1} = \<ordfeminine>shared \<rbrace>
@@ -471,7 +471,7 @@ section "Deriving the global guarantees relevant for liveness"
 
 definition 
 "cs_cond \<rho> cs = 
-(\<rho> \<Turnstile> cs 
+(\<Turnstile> cs 
   RELY \<lbrace> True \<rbrace>
   PRE  \<lbrace> True \<rbrace>
   POST \<lbrace> True \<rbrace> 
@@ -487,7 +487,7 @@ text "Note that the rely condition \<ordmasculine>flag0 = \<ordfeminine>flag0 in
  
 lemma thread0_auxG:
 "cs_cond \<rho> cs0 \<Longrightarrow> 
- \<rho> \<Turnstile> thread0_aux cs0 (\<lambda>a. True)
+ \<Turnstile> thread0_aux cs0 (\<lambda>a. True)
  RELY \<lbrace> \<ordmasculine>flag0 = \<ordfeminine>flag0 \<and> \<ordmasculine>turn_aux0 = \<ordfeminine>turn_aux0 \<rbrace>
   PRE \<lbrace> \<not>\<acute>turn_aux0 \<rbrace> 
   POST \<lbrace> True \<rbrace>
@@ -504,7 +504,7 @@ lemma thread0_auxG:
 
 lemma thread1_auxG:
 "cs_cond \<rho> cs1 \<Longrightarrow> 
- \<rho> \<Turnstile> thread1_aux cs1 (\<lambda>a. True)
+ \<Turnstile> thread1_aux cs1 (\<lambda>a. True)
  RELY \<lbrace> \<ordmasculine>flag1 = \<ordfeminine>flag1 \<and> \<ordmasculine>turn_aux1 = \<ordfeminine>turn_aux1 \<rbrace>
   PRE  \<lbrace> \<not>\<acute>turn_aux1 \<rbrace> 
   POST \<lbrace> True \<rbrace>
@@ -541,7 +541,7 @@ definition
 lemma mutex_auxG :
 "cs_cond \<rho> cs0 \<Longrightarrow> 
  cs_cond \<rho> cs1 \<Longrightarrow> 
-  \<rho> \<Turnstile>i mutex_auxG cs0 cs1  
+  \<Turnstile>i mutex_auxG cs0 cs1  
   RELY Id
   PRE  \<lbrace> \<not>\<acute>turn_aux0 \<and> \<not>\<acute>turn_aux1  \<rbrace>
   POST \<lbrace> True \<rbrace>

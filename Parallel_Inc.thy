@@ -48,7 +48,7 @@ INTERLEAVING-END"
 
 
 lemma inc_aux:
- "\<rho> \<Turnstile> inc_aux
+ "\<Turnstile> inc_aux
  RELY \<lbrace>\<ordmasculine>x=\<ordfeminine>x \<and> \<ordmasculine>a0=\<ordfeminine>a0 \<and> \<ordmasculine>a1=\<ordfeminine>a1\<rbrace>
  PRE  \<lbrace>\<acute>x=0 \<and> \<acute>a0=0 \<and> \<acute>a1=0 \<rbrace>
  POST \<lbrace>\<acute>x=2 \<and> \<acute>a0=1 \<and> \<acute>a1=1 \<rbrace>
@@ -59,13 +59,13 @@ lemma inc_aux:
 definition "r = {(u :: 'a state_scheme, v :: 'a state_scheme) | u v. x u = x v}"
 
 lemma inc_corr :
-"\<rho>, \<rho>' \<Turnstile> inc_aux \<sqsupseteq>\<^bsub>r\<^esub> inc"
+"\<Turnstile> inc_aux \<sqsupseteq>\<^bsub>r\<^esub> inc"
   apply(simp add: inc_aux_def inc_def r_def)
   by plain_prog_corr_tac
 
 
 lemma inc :
- "\<rho> \<Turnstile> inc 
+ "\<Turnstile> inc 
  RELY \<lbrace>\<ordmasculine>x=\<ordfeminine>x\<rbrace>
  PRE  \<lbrace>\<acute>x=0\<rbrace>
  POST \<lbrace>\<acute>x=2\<rbrace>

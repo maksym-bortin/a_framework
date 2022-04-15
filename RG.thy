@@ -32,6 +32,18 @@ definition HoareTripleRG2 :: "(nat \<Rightarrow> 's LA) \<Rightarrow> 's statere
 where "\<rho> \<Turnstile>\<^sub>2 {R, P} p {Q, G} = (\<forall>\<sigma>. \<rho> \<Turnstile> {R, P `` {\<sigma>}} p {Q `` {\<sigma>}, G})" 
 
 
+abbreviation HoareTripleRGjf :: "'s staterel \<Rightarrow> 's set \<Rightarrow> 's LA \<Rightarrow>
+                                 's set \<Rightarrow> 's staterel \<Rightarrow> bool"
+(" \<Turnstile> {_ , _} _ {_ , _}" [20, 20, 71, 20, 20] 71) 
+where "\<Turnstile> {R, P} p {Q, G} \<equiv> (\<lambda>x. Skip) \<Turnstile> {R, P} p {Q, G}"
+
+abbreviation HoareTripleRG2jf :: "'s staterel \<Rightarrow> 's staterel \<Rightarrow>  
+                              's LA \<Rightarrow>
+                              's staterel \<Rightarrow> 's staterel \<Rightarrow> bool"
+("\<Turnstile>\<^sub>2 {_ , _} _ {_ , _}" [20, 20, 71, 20, 20] 71)
+where "\<Turnstile>\<^sub>2 {R, P} p {Q, G} \<equiv> (\<lambda>x. Skip) \<Turnstile>\<^sub>2 {R, P} p {Q, G}"
+
+
 lemma HoareTripleRG_subset_eq :
 "\<rho> \<Turnstile> {R, P} p {Q, G} =
  (\<forall>P' \<subseteq> P. \<rho> \<Turnstile> {R, P'} p {Q, G})"
@@ -77,6 +89,12 @@ where "\<rho> \<Turnstile>i {R, P} p {Q, G} \<equiv>
 (EnvCond \<rho> R \<inter> InitCond \<rho> P \<inter> \<lbrakk>p\<rbrakk>\<^sub>\<rho> \<subseteq> TermCond \<rho> Q \<inter> ProgCond \<rho> G) \<and>
 (EnvCond_i \<rho> R \<inter> InitCond_i \<rho> P \<inter> iCOMP \<rho> \<inter> {sq. fst(fst(sq 0)) = p} \<subseteq> 
  TermCond_i \<rho> Q \<inter> ProgCond_i \<rho> G)"
+
+
+abbreviation HoareTripleRGjf_i :: "'s staterel \<Rightarrow> 's set \<Rightarrow> 's LA \<Rightarrow>
+                              's set \<Rightarrow> 's staterel \<Rightarrow> bool"
+("\<Turnstile>i {_ , _} _ {_ , _}" [20, 20, 71, 20, 20] 71) 
+where "\<Turnstile>i {R, P} p {Q, G} \<equiv> (\<lambda>x. Skip) \<Turnstile>i {R, P} p {Q, G}"
 
 
 theorem HoareTripleRG_i :
@@ -143,12 +161,6 @@ syntax
 translations
 "_rg \<rho> p R P Q G" \<rightharpoonup> "\<rho> \<Turnstile> {R, P} p {Q, G}"
 
-syntax
-   "_rgi" :: "(nat \<Rightarrow> 's LA) \<Rightarrow> 's LA \<Rightarrow> 's staterel \<Rightarrow> 's set \<Rightarrow> 's set \<Rightarrow>'s staterel \<Rightarrow> bool"  
-    ("(4_)/ \<Turnstile>i _//RELY _//PRE _//POST _//GUAR _" [60,0,0,0,0] 45)
-translations
-"_rgi \<rho> p R P Q G" \<rightharpoonup> "\<rho> \<Turnstile>i {R, P} p {Q, G}"
-
 
 ML \<open> val syntax_debug = false \<close>
 
@@ -164,9 +176,77 @@ print_translation \<open>
 
   in
    [(@{const_syntax HoareTripleRG}, K rg_tr)]
-
   end
 \<close>
+
+syntax
+   "_rgjf" :: "'s LA \<Rightarrow> 's staterel \<Rightarrow> 's set \<Rightarrow> 's set \<Rightarrow>'s staterel \<Rightarrow> bool"  
+    ("\<Turnstile> _//RELY _//PRE _//POST _//GUAR _" [0,0,0,0] 45)
+translations
+"_rgjf p R P Q G" \<rightharpoonup> "\<Turnstile> {R, P} p {Q, G}"
+
+
+print_translation \<open> 
+   let
+    fun rgjf_tr (R :: P :: p :: Q :: G :: ts) =
+        let val _ = if syntax_debug then writeln "rgjf" else ()
+          in Syntax.const @{syntax_const "_rgjf"} $
+               p $ R $ P $ Q $ G
+          end
+      | rgjf_tr x = let val _ = writeln (@{make_string} {x = x}) 
+            in raise Match end;
+
+  in
+   [(@{const_syntax HoareTripleRGjf}, K rgjf_tr)]
+  end
+\<close>
+
+syntax
+   "_rgi" :: "(nat \<Rightarrow> 's LA) \<Rightarrow> 's LA \<Rightarrow> 's staterel \<Rightarrow> 's set \<Rightarrow> 's set \<Rightarrow>'s staterel \<Rightarrow> bool"  
+    ("(4_)/ \<Turnstile>i _//RELY _//PRE _//POST _//GUAR _" [60,0,0,0,0] 45)
+translations
+"_rgi \<rho> p R P Q G" \<rightharpoonup> "\<rho> \<Turnstile>i {R, P} p {Q, G}"
+
+print_translation \<open> 
+   let
+    fun rgi_tr (rho :: R :: P :: p :: Q :: G :: ts) =
+        let val _ = if syntax_debug then writeln "rgi" else ()
+          in Syntax.const @{syntax_const "_rgi"} $
+               rho $ p $ R $ P $ Q $ G
+          end
+      | rgi_tr x = let val _ = writeln (@{make_string} {x = x}) 
+            in raise Match end;
+
+  in
+   [(@{const_syntax HoareTripleRG_i}, K rgi_tr)]
+  end
+\<close>
+
+
+syntax
+   "_rgijf" :: "'s LA \<Rightarrow> 's staterel \<Rightarrow> 's set \<Rightarrow> 's set \<Rightarrow>'s staterel \<Rightarrow> bool"  
+    ("\<Turnstile>i _//RELY _//PRE _//POST _//GUAR _" [0,0,0,0] 45)
+translations
+"_rgijf p R P Q G" \<rightharpoonup> "\<Turnstile>i {R, P} p {Q, G}"
+
+print_translation \<open> 
+   let
+    fun rgijf_tr (R :: P :: p :: Q :: G :: ts) =
+        let val _ = if syntax_debug then writeln "rgijf" else ()
+          in Syntax.const @{syntax_const "_rgijf"} $
+               p $ R $ P $ Q $ G
+          end
+      | rgijf_tr x = let val _ = writeln (@{make_string} {x = x}) 
+            in raise Match end;
+
+  in
+   [(@{const_syntax HoareTripleRGjf_i}, K rgijf_tr)]
+  end
+\<close>
+
+
+
+
 
 
 syntax
@@ -180,7 +260,7 @@ translations
 ML \<open> val syntax_debug = false \<close>
 print_translation \<open> let
     fun rg2_tr (rho :: R :: P :: p :: Q :: G :: ts) =
-        let val _ = if syntax_debug then writeln "rg" else ()
+        let val _ = if syntax_debug then writeln "rg2" else ()
           in Syntax.const @{syntax_const "_rg2"} $
                rho $ p $ R $ P $ Q $ G
           end
@@ -189,7 +269,27 @@ print_translation \<open> let
 
   in
    [(@{const_syntax HoareTripleRG2}, K rg2_tr)]
+  end
+\<close>
 
+syntax
+   "_rg2jf" :: "'s LA \<Rightarrow> 's staterel \<Rightarrow> 
+                's staterel \<Rightarrow> 's staterel \<Rightarrow> 's staterel \<Rightarrow> bool"  
+    ("\<Turnstile>\<^sub>2 _//RELY _//PRE _//POST _//GUAR _" [0,0,0,0] 45)
+translations
+"_rg2jf p R P Q G" \<rightharpoonup> "\<Turnstile>\<^sub>2 {R, P} p {Q, G}"
+
+print_translation \<open> let
+    fun rg2jf_tr (R :: P :: p :: Q :: G :: ts) =
+        let val _ = if syntax_debug then writeln "rg2jf" else ()
+          in Syntax.const @{syntax_const "_rg2jf"} $
+               p $ R $ P $ Q $ G
+          end
+      | rg2jf_tr x = let val _ = writeln (@{make_string} {x = x})
+            in raise Match end;
+
+  in
+   [(@{const_syntax HoareTripleRG2jf}, K rg2jf_tr)]
   end
 \<close>
 
