@@ -13,7 +13,7 @@ in  the sequel).  The license provider has developed  a framework  for
 modelling,  verification  and  transformation of concurrent imperative
 programs that includes a collection of theories (called "software" and
 "framework"  in the sequel)  for  the  theorem  prover  Isabelle ( see 
-www.cl.cam.ac.uk/research/hvg/Isabelle).
+README and www.cl.cam.ac.uk/research/hvg/Isabelle).
 
 Following  the ideas of  open source  software,  the  license provider
 gives access to the software  without fee  for anyone (called "license

@@ -1,15 +1,15 @@
 This package contains a formalisation of a framework 
 for modelling, verification and transformation of concurrent 
-imperative programs in Isabelle2021-1 theorem prover (www.cl.cam.ac.uk/research/hvg/Isabelle),
-see LICENSE for more details. 
+imperative programs in the Isabelle/HOL theorem prover, versions Isabelle2021-1 and Isabelle2022
+(see www.cl.cam.ac.uk/research/hvg/Isabelle and LICENSE for more details). 
 
 It includes the following theories:
 
- - Prelims.thy       -- auxiliary lemmas
+ - Prelims.thy       -- auxiliaries
  - LA.thy            -- abstract and concrete syntax of the framework's language
  - SmallSteps.thy    -- the computational model
- - Computations.thy  -- potential computations and conditions 
- - RG.thy            -- the setup of a Hoare-style rely/guarantee program logic
+ - Computations.thy  -- potential computations and conditions on these
+ - RG.thy            -- the setup of a Hoare-style rely/guarantee (R/G) program logic
  - ProgCorr.thy      -- program correspondences
  - AnnChange.thy     -- annotations do not affect program behaviours 
  - Rules_prelims.thy -- auxiliaries for Rules.thy
