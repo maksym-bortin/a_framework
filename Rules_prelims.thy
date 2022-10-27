@@ -199,7 +199,7 @@ where "Parallel_simR = {(xs, ((Parallel ps, s), tk)) | xs ps s tk.
 lemma Parallel_simR_D :
 "(xs, ((p, s), tk)) \<in> Parallel_simR \<Longrightarrow>
  (\<exists>ps. p = Parallel ps \<and> 
-      length xs = length ps \<and> (\<forall>i<length ps. fst(fst(xs!i)) = fst(ps!i))) \<and>
+      length xs = length ps \<and> (\<forall>i<length ps. progOf(xs!i) = fst(ps!i))) \<and>
 (\<forall>cf \<in> set xs. snd(fst cf) = s) \<and> 
  tk = (\<exists>cf \<in> set xs. snd cf)"
   by(simp add: Parallel_simR_def, blast)
