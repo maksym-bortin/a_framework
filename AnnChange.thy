@@ -235,8 +235,8 @@ lemma upto_ann_corr :
 
 lemma upto_ann_eqv :
 "(p, q) \<in> Eq_upto_ann \<Longrightarrow>
- \<rho> \<Turnstile> p ~ q"
-  apply(simp add: prog_bicorr_def)
+ \<rho> \<Turnstile> p \<approx> q"
+  apply(simp add: prog_mucorr_def)
   apply(rule conjI)
    apply(erule upto_ann_corr)
   apply(rule upto_ann_corr)   
