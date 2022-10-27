@@ -27,14 +27,14 @@ lemma take_drop_tl :
 
 lemma drop_conds :
 "sq \<in> COMP \<rho> \<Longrightarrow>
- sq ! i = ((p', t), True) \<Longrightarrow>
- sq ! (i - Suc 0) = ((p, t), tk) \<Longrightarrow>
+ sq!i = ((p', t), True) \<Longrightarrow>
+ sq!(i - Suc 0) = ((p, t), tk) \<Longrightarrow>
  drop i sq \<in> TermCond \<rho> Q \<Longrightarrow>
  drop i sq \<in> ProgCond \<rho> G \<Longrightarrow> 
  refl G \<Longrightarrow>
  0 < i \<Longrightarrow>
- \<forall>k<i. 0 < k \<longrightarrow> \<not> snd (sq ! k) \<Longrightarrow>
- \<forall>k<i. fst (fst (sq ! k)) \<noteq> Skip \<Longrightarrow>
+ \<forall>k<i. 0 < k \<longrightarrow> \<not>tkOf(sq ! k) \<Longrightarrow>
+ \<forall>k<i. progOf(sq!k) \<noteq> Skip \<Longrightarrow>
  sq \<in> TermCond \<rho> Q \<and> sq \<in> ProgCond \<rho> G"
   apply(rule conjI)
    apply(subst TermCond_def, simp)
@@ -74,15 +74,15 @@ section "Seq splits"
 
 lemma Seq_split[rule_format] :
 "sq \<in> \<lbrakk>Seq p1 p2\<rbrakk>\<^sub>\<rho> \<Longrightarrow> 
- \<forall>i<length sq. 0 < i \<longrightarrow> snd(sq!i) \<longrightarrow> progOf(sq!(i-1)) \<noteq> Seq Skip p2 \<Longrightarrow>
+ \<forall>i<length sq. 0 < i \<longrightarrow> tkOf(sq!i) \<longrightarrow> progOf(sq!(i-1)) \<noteq> Seq Skip p2 \<Longrightarrow>
  \<exists>sq1. length sq1 = length sq \<and> 
    sq1 \<in> \<lbrakk>p1\<rbrakk>\<^sub>\<rho> \<and> 
    (\<forall>i<length sq. sq!i = ((Seq (progOf(sq1!i)) p2, stateOf(sq1!i)), tkOf(sq1!i)))"
   apply(frule pcs_noNil)
   apply(subgoal_tac "\<forall>i<length sq. \<exists>u. progOf(sq!i) = Seq u p2")
   apply(rule_tac x="fprefix (\<lambda>i. case (sq!i) of
-                                 ((Seq u p2, s), tk) \<Rightarrow> ((u, s), tk)
-                               | _ \<Rightarrow> undefined) (length sq - 1)" in exI, simp add: fprefix_length)
+                                 ((Seq u p2, s), tk) \<Rightarrow> ((u, s), tk)) (length sq - 1)" in exI, 
+        simp add: fprefix_length)
    apply(rule conjI)
     apply(clarsimp simp: pcs_def)
     apply(rule conjI)
@@ -130,15 +130,15 @@ lemma Seq_split[rule_format] :
 
 lemma Seq_split2[rule_format] :
 "sq \<in> \<lbrakk>Seq Skip p2\<rbrakk>\<^sub>\<rho> \<Longrightarrow> 
- \<forall>i<length sq. 0 < i \<longrightarrow> \<not> snd(sq!i) \<Longrightarrow>
+ \<forall>i<length sq. 0 < i \<longrightarrow> \<not>tkOf(sq!i) \<Longrightarrow>
  \<exists>sq2. length sq = length sq2 \<and> 
    sq2 \<in> \<lbrakk>p2\<rbrakk>\<^sub>\<rho> \<and> 
    (\<forall>i<length sq2. progOf(sq!i) = Skip;p2 \<and> sq2!i = ((p2, stateOf(sq!i)), tkOf(sq!i)))"
   apply(frule pcs_noNil)
   apply(subgoal_tac "\<forall>i<length sq. progOf(sq!i) = Seq Skip p2")
   apply(rule_tac x="fprefix (\<lambda>i. case (sq!i) of
-                                 ((Seq u p, s), tk) \<Rightarrow> ((p, s), tk)
-                               | _ \<Rightarrow> undefined) (length sq - 1)" in exI, simp add: fprefix_length)
+                                 ((Seq u p, s), tk) \<Rightarrow> ((p, s), tk)) (length sq - 1)" in exI, 
+        simp add: fprefix_length)
    apply(rule conjI)
     apply(clarsimp simp: pcs_def)
     apply(rule conjI)
@@ -191,8 +191,9 @@ where "stepRP \<rho> = stepR \<rho> - Parallel_break"
 
 definition Parallel_simR :: "(('s config \<times> bool) list \<times> ('s config \<times> bool)) set"
 where "Parallel_simR = {(xs, ((Parallel ps, s), tk)) | xs ps s tk.
-                  length xs = length ps \<and> (\<forall>i<length ps. fst(fst(xs!i)) = fst(ps!i)) \<and> (\<forall>cf \<in> set xs. snd(fst cf) = s) \<and> 
-                  tk = (\<exists>cf \<in> set xs. snd cf)}"
+                  length xs = length ps \<and> (\<forall>i<length ps. progOf(xs!i) = fst(ps!i)) \<and> 
+                                          (\<forall>cf\<in>set xs. stateOf cf = s) \<and> 
+                  tk = (\<exists>cf\<in>set xs. tkOf cf)}"
 
 
 lemma Parallel_simR_D :
@@ -227,9 +228,6 @@ lemma Parallel_simR_InitCond :
 text "This is auxiliary"
 definition step2 :: "('a \<times> 'a) set \<Rightarrow> ('a list \<times> 'a list) set"
 where "step2 R = {(xs, zs) | xs zs. length xs = length zs \<and> (\<forall>(x, z)\<in>set(zip xs zs). (x, z) \<in> R)}"
-
-
-
 
 
 lemma Parallel_simR :
@@ -381,21 +379,6 @@ lemma Parallel_split' :
    apply(drule_tac x=i in spec, drule mp, simp+)
    apply(subst (asm) nth_append, simp)
    apply(subst (asm) nth_append, simp split: if_splits)
-(*
-  oops
-  apply(frule COMP_noNil)
-  apply(drule_tac x=ps in spec)
-  apply(drule mp)
-   apply(rule_tac x=s in exI)
-   apply(rule_tac x=tk in exI)
-   apply(case_tac sq, simp_all)
-  apply(subst (asm) last_conv_nth, assumption)
-  apply(drule mp)
-   apply clarsimp
-   apply(drule_tac x=i in spec, simp)
-   apply(subst (asm) nth_append, simp)
-   apply(subst (asm) nth_append, simp split: if_split_asm)
-*)
   apply clarsimp
   apply(insert Parallel_simR[of \<rho>])
   apply(drule_tac c="(map (\<lambda>x. x!(length sq - 1)) sqs, ((p', s'), tk'))" in subsetD)

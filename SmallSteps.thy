@@ -22,6 +22,17 @@ section "The fine-grained (small) computation steps"
 type_synonym 's config = "'s LA \<times> 's"
 
 
+abbreviation stateOf :: "'s config \<times> bool \<Rightarrow> 's"
+  where "stateOf cf \<equiv> snd(fst cf)"
+
+abbreviation progOf :: "'s config \<times> bool \<Rightarrow> 's LA"
+  where "progOf cf \<equiv> fst(fst cf)"
+
+abbreviation tkOf :: "'s config \<times> bool \<Rightarrow> bool"
+  where "tkOf cf \<equiv> snd(cf)"
+
+
+
 definition estep :: "'s config \<Rightarrow> 's config \<Rightarrow> bool"
                    ("\<turnstile> (_ -e\<rightarrow>/ _)" [81,81] 100)
                    where
@@ -114,25 +125,6 @@ corollary jumpfree_pstep :
  jumpfree p \<Longrightarrow>
  jumpfree q"
   by(drule jumpfree_pstep', simp_all)
-
-
-
-
-
-lemma rtranclp_sub :
-"r\<^sup>*\<^sup>* u v \<Longrightarrow> \<forall>u v. r u v \<longrightarrow> s u v \<Longrightarrow> s\<^sup>*\<^sup>* u v"
-  apply(erule rtranclp.induct)
-   apply simp
-  by force
-
-lemma rtranclp_sub2 :
-"r\<^sup>*\<^sup>* u v \<Longrightarrow> \<forall>u v. r u v \<longrightarrow> s\<^sup>*\<^sup>* u v \<Longrightarrow> s\<^sup>*\<^sup>* u v"
-  apply(erule rtranclp.induct)
-   apply simp
-  by force
-
-
-
 
 
 

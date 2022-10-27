@@ -25,14 +25,6 @@ definition stepR :: "(nat \<Rightarrow> 's LA) \<Rightarrow> (('s config \<times
 where "stepR \<rho> = {(((p, s), tk), ((p', t), tk')) | p s tk p' t tk'. 
                    if tk' then \<rho> \<turnstile> (p, s) -p\<rightarrow> (p', t) else \<turnstile> (p, s) -e\<rightarrow> (p', t)}"
 
-abbreviation stateOf :: "'s config \<times> bool \<Rightarrow> 's"
-  where "stateOf cf \<equiv> snd(fst cf)"
-
-abbreviation progOf :: "'s config \<times> bool \<Rightarrow> 's LA"
-  where "progOf cf \<equiv> fst(fst cf)"
-
-abbreviation tkOf :: "'s config \<times> bool \<Rightarrow> bool"
-  where "tkOf cf \<equiv> snd(cf)"
 
 
 lemma stepR_D1 :
@@ -74,7 +66,7 @@ lemma iCOMP_jumpfree :
   apply(rule allI)
   apply(induct_tac i, simp)
   apply clarify
-  apply(subgoal_tac "jumpfree (fst(fst(sq n)))")
+  apply(subgoal_tac "jumpfree (progOf(sq n))")
    apply(clarsimp simp: iCOMP_def)
    apply(drule_tac x=n in spec)
    apply(case_tac "sq n")
@@ -90,12 +82,12 @@ lemma iCOMP_jumpfree :
 
 
 lemma iCOMP_Skip :
-"sq \<in> iCOMP \<rho> \<Longrightarrow> fst(fst(sq j)) = Skip \<Longrightarrow>
- \<forall>i>j. fst(fst(sq i)) = Skip \<and> \<not> snd(sq i)"
+"sq \<in> iCOMP \<rho> \<Longrightarrow> progOf(sq j) = Skip \<Longrightarrow>
+ \<forall>i>j. progOf(sq i) = Skip \<and> \<not> snd(sq i)"
   apply(rule allI)
   apply(induct_tac i, simp)
   apply clarify
-  apply(subgoal_tac "fst(fst(sq n)) = Skip")
+  apply(subgoal_tac "progOf(sq n) = Skip")
    apply(clarsimp simp: iCOMP_def)
    apply(drule_tac x=n in spec)
    apply(case_tac "sq n")
@@ -111,8 +103,8 @@ lemma iCOMP_Skip :
 
 
 lemma iCOMP_Skip' :
-"sq \<in> iCOMP \<rho> \<Longrightarrow> fst(fst(sq j)) = Skip \<Longrightarrow>
- \<forall>i\<ge>j. fst(fst(sq i)) = Skip"
+"sq \<in> iCOMP \<rho> \<Longrightarrow> progOf(sq j) = Skip \<Longrightarrow>
+ \<forall>i\<ge>j. progOf(sq i) = Skip"
   apply(drule iCOMP_Skip, assumption)
   apply clarsimp
   apply(case_tac "i=j", simp)
@@ -120,7 +112,7 @@ lemma iCOMP_Skip' :
 
 
 lemma iCOMP_estepsG :
-"sq \<in> iCOMP \<rho> \<Longrightarrow> \<forall>k<j. i < k \<longrightarrow> progOf(sq(k-1)) = progOf(sq i) \<longrightarrow> \<not> snd (sq k) \<Longrightarrow>
+"sq \<in> iCOMP \<rho> \<Longrightarrow> \<forall>k<j. i < k \<longrightarrow> progOf(sq(k-1)) = progOf(sq i) \<longrightarrow> \<not>tkOf(sq k) \<Longrightarrow>
  \<forall>k<j. i \<le> k \<longrightarrow> progOf(sq k) = progOf(sq i)"
   apply(rule allI)
   apply(induct_tac k, simp)
@@ -139,8 +131,8 @@ lemma iCOMP_estepsG :
 
 
 lemma iCOMP_esteps :
-"sq \<in> iCOMP \<rho> \<Longrightarrow> \<forall>k<j. i < k \<longrightarrow> \<not> snd (sq k) \<Longrightarrow>
- \<forall>k<j. i \<le> k \<longrightarrow> fst(fst(sq k)) = fst(fst(sq i))"
+"sq \<in> iCOMP \<rho> \<Longrightarrow> \<forall>k<j. i < k \<longrightarrow> \<not>tkOf(sq k) \<Longrightarrow>
+ \<forall>k<j. i \<le> k \<longrightarrow> progOf(sq k) = progOf(sq i)"
   by(drule_tac i=i and j=j in iCOMP_estepsG, simp, assumption)
 
 
@@ -214,7 +206,7 @@ where "ProgCond_i \<rho> R = {sq |sq. sq \<in> iCOMP \<rho> \<and> (\<forall>i. 
 definition "InitCond_i \<rho> P = {sq |sq c s tk. sq \<in> iCOMP \<rho> \<and> sq 0 = ((c, s), tk) \<and> s \<in> P}"
 
 definition "TermCond_i \<rho> Q = {sq |sq. sq \<in> iCOMP \<rho> \<and> 
-                                  (\<forall>j. fst(fst(sq j)) = Skip \<longrightarrow> 
+                                  (\<forall>j. progOf(sq j) = Skip \<longrightarrow> 
                                         (\<exists>i s tk. i \<le> j \<and> sq i = ((Skip, s), tk) \<and> s \<in> Q))}"
 
 
@@ -430,9 +422,9 @@ lemma COMP_pstep_pow[rule_format] :
 
 lemma esteps_COMP[rule_format] :
 "sq \<in> COMP \<rho> \<Longrightarrow> 
- \<forall>i < length sq. 0 < i \<longrightarrow> \<not> snd(sq!i) \<and> (snd(fst(sq!(i - 1))) \<in> S \<longrightarrow> snd(fst(sq!i)) \<in> S) \<Longrightarrow> 
-  snd(fst(sq!0)) \<in> S \<Longrightarrow> i < length sq \<Longrightarrow> 
- fst(fst(sq!i)) = fst(fst(sq!0)) \<and> snd(fst(sq!i)) \<in> S"
+ \<forall>i < length sq. 0 < i \<longrightarrow> \<not>tkOf(sq!i) \<and> (stateOf(sq!(i - 1)) \<in> S \<longrightarrow> stateOf(sq!i) \<in> S) \<Longrightarrow> 
+  stateOf(sq!0) \<in> S \<Longrightarrow> i < length sq \<Longrightarrow> 
+ progOf(sq!i) = progOf(sq!0) \<and> stateOf(sq!i) \<in> S"
   apply(induct i, simp_all)
   apply(drule spec, drule mp, assumption)
   apply clarsimp
@@ -445,8 +437,8 @@ lemma esteps_COMP[rule_format] :
 lemma Skip_COMP[rule_format] :
 "sq \<in> COMP \<rho> \<Longrightarrow> \<forall>i < length sq. \<forall>s t p tk. 0 < i \<longrightarrow> sq!(i - 1) = ((Skip, s), tk) \<longrightarrow> 
                sq!i = ((p, t), False) \<longrightarrow> s \<in> Q \<longrightarrow> t \<in> Q \<Longrightarrow>
- fst(fst(sq!0)) = Skip \<Longrightarrow> snd(fst(sq!0)) \<in> Q \<Longrightarrow>
- i < length sq \<Longrightarrow> fst(fst(sq!i)) = Skip \<and> snd(fst(sq!i)) \<in> Q" 
+ progOf(sq!0) = Skip \<Longrightarrow> stateOf(sq!0) \<in> Q \<Longrightarrow>
+ i < length sq \<Longrightarrow> progOf(sq!i) = Skip \<and> stateOf(sq!i) \<in> Q" 
   apply(induct i, simp_all)
   apply(drule_tac x="i+1" in spec, simp)
   apply(case_tac "sq!i")
@@ -465,7 +457,7 @@ lemma Skip_COMP[rule_format] :
 
 lemma Skip_COMP_pstep :
 "sq \<in> COMP \<rho> \<Longrightarrow> 
- fst(fst(sq!0)) = Skip \<Longrightarrow> i < length sq \<Longrightarrow> 0 < i \<Longrightarrow> snd(sq!i) \<Longrightarrow> P"
+ progOf(sq!0) = Skip \<Longrightarrow> i < length sq \<Longrightarrow> 0 < i \<Longrightarrow> tkOf(sq!i) \<Longrightarrow> P"
   apply(frule_tac i="i-1" and Q=UNIV in Skip_COMP, clarsimp, assumption, simp, simp)
   apply(case_tac "sq!(i-1)", clarsimp)
   apply(case_tac "sq!i", clarsimp)
@@ -585,8 +577,8 @@ lemma COMP_decomp :
 lemma Skip_COMP'[rule_format] :
 "sq \<in> COMP \<rho> \<Longrightarrow> (\<forall>i < length sq. \<forall>s t p tk. 0 < i \<longrightarrow> sq!(i - 1) = ((Skip, s), tk) \<longrightarrow> 
                sq!i = ((p, t), False) \<longrightarrow> s \<in> Q \<longrightarrow> t \<in> Q) \<Longrightarrow>
- fst(fst(sq!i)) = Skip \<Longrightarrow> snd(fst(sq!i)) \<in> Q \<Longrightarrow> i < length sq \<Longrightarrow>
- \<forall>j<length sq. i\<le>j \<longrightarrow> fst(fst(sq!j)) = Skip \<and> snd(fst(sq!j)) \<in> Q"
+ progOf(sq!i) = Skip \<Longrightarrow> stateOf(sq!i) \<in> Q \<Longrightarrow> i < length sq \<Longrightarrow>
+ \<forall>j<length sq. i\<le>j \<longrightarrow> progOf(sq!j) = Skip \<and> stateOf(sq!j) \<in> Q"
   apply(drule_tac su="drop i sq" in COMP_suffix_cls)
     apply(rule suffix_drop, simp)
   apply clarsimp
@@ -628,9 +620,10 @@ lemma pcs0 :
 
 
 lemma esteps_pcs :
-"sq \<in> \<lbrakk>p\<rbrakk>\<^sub>\<rho> \<Longrightarrow> \<forall>i < length sq. 0 < i \<longrightarrow> \<not> snd(sq!i) \<and> (snd(fst(sq!(i - 1))) \<in> P \<longrightarrow> snd(fst(sq!i)) \<in> P) \<Longrightarrow> 
- snd(fst(sq!0)) \<in> P \<Longrightarrow>
- (\<forall>i < length sq. fst(fst(sq!i)) = p \<and> snd(fst(sq!i)) \<in> P)" 
+"sq \<in> \<lbrakk>p\<rbrakk>\<^sub>\<rho> \<Longrightarrow> 
+ \<forall>i<length sq. 0 < i \<longrightarrow> \<not>tkOf(sq!i) \<and> (stateOf(sq!(i - 1)) \<in> P \<longrightarrow> stateOf(sq!i) \<in> P) \<Longrightarrow> 
+ stateOf(sq!0) \<in> P \<Longrightarrow>
+ \<forall>i < length sq. progOf(sq!i) = p \<and> stateOf(sq!i) \<in> P" 
   apply(clarsimp simp add: pcs_def)
   apply(frule COMP_noNil)
   apply(subst (asm) hd_conv_nth, assumption)
@@ -643,8 +636,8 @@ lemma esteps_pcs :
 lemma Skip_pcs :
 "sq \<in> \<lbrakk>Skip\<rbrakk>\<^sub>\<rho> \<Longrightarrow> \<forall>i < length sq. \<forall>s t p' tk. 0 < i \<longrightarrow> sq!(i - 1) = ((Skip, s), tk) \<longrightarrow> 
                   sq!i = ((p', t), False) \<longrightarrow> s \<in> Q \<longrightarrow> t \<in> Q \<Longrightarrow>
- snd(fst(sq!0)) \<in> Q \<Longrightarrow>
- \<forall>i < length sq. fst(fst(sq!i)) = Skip \<and> snd(fst(sq!i)) \<in> Q" 
+ stateOf(sq!0) \<in> Q \<Longrightarrow>
+ \<forall>i < length sq. progOf(sq!i) = Skip \<and> stateOf(sq!i) \<in> Q" 
   apply(clarsimp simp add: pcs_def)
   apply(frule COMP_noNil)
   apply(subst (asm) hd_conv_nth, assumption)
@@ -677,7 +670,7 @@ lemma pcs_prefix_cls :
 
 lemma pcs_suffix_cls :
 "sq \<in> \<lbrakk>p\<rbrakk>\<^sub>\<rho> \<Longrightarrow> suffix su sq \<Longrightarrow> su \<noteq> [] \<Longrightarrow> 
- su \<in> \<lbrakk>fst(fst(sq!(length sq - length su)))\<rbrakk>\<^sub>\<rho>"
+ su \<in> \<lbrakk>progOf(sq!(length sq - length su))\<rbrakk>\<^sub>\<rho>"
   apply(clarsimp simp add: pcs_def)
   apply(drule COMP_suffix_cls, assumption+)
    apply(drule_tac i=0 in suffix_nth)
@@ -709,7 +702,7 @@ lemma acs_prefix_cls :
 section "Pcs, constrained by conditions"
 
 
-text "Computations where environment transitions satisfy a state relation"
+text "Computations where all environment transitions satisfy a state relation"
 definition EnvCond :: "(nat \<Rightarrow> 's LA) \<Rightarrow> 's staterel \<Rightarrow> 
                       ('s config \<times> bool) list set"
 where "EnvCond \<rho> R = {sq |sq p. sq \<in> \<lbrakk>p\<rbrakk>\<^sub>\<rho> \<and> (\<forall>i. i < length sq \<longrightarrow> 0 < i \<longrightarrow>
@@ -818,7 +811,7 @@ lemma EnvCond_compose :
 
 
 
-text "Computations where program transitions satisfy a state relation"
+text "Computations where all program transitions satisfy a state relation"
 definition ProgCond :: "(nat \<Rightarrow> 's LA) \<Rightarrow> 's staterel \<Rightarrow> ('s config \<times> bool) list set"
 where "ProgCond \<rho> R = {sq |sq p. sq \<in> \<lbrakk>p\<rbrakk>\<^sub>\<rho> \<and> (\<forall>i. i < length sq \<longrightarrow> 0 < i \<longrightarrow>
                                                  cstep_cond True R (sq!(i-1)) (sq!i))}"
@@ -927,7 +920,7 @@ lemma ProgCond_decompose :
    apply(erule ProgCond_prefix_cls, simp add: prefix_def, fast, rule subset_refl)
   apply(subst ProgCond_def, simp)
   apply(rule conjI)
-   apply(rule_tac x="fst(fst(sq'!0))" in exI)
+   apply(rule_tac x="progOf(sq'!0)" in exI)
    apply(clarsimp simp: ProgCond_def pcs_def)
    apply(rule conjI)
     apply(drule COMP_decomp, assumption)
@@ -996,12 +989,12 @@ lemma InitCond_prefix_cls :
 
 text "condition upon termination"
 definition "TermCond \<rho> Q = {sq |sq p. sq \<in> \<lbrakk>p\<rbrakk>\<^sub>\<rho> \<and> 
-                                  (\<forall>j<length sq. fst(fst(sq!j)) = Skip \<longrightarrow> 
+                                  (\<forall>j<length sq. progOf(sq!j) = Skip \<longrightarrow> 
                                         (\<exists>i t tk. i \<le> j \<and> sq!i = ((Skip, t), tk) \<and> t \<in> Q))}"
 
 lemma TermCond_D :
 "sq \<in> TermCond \<rho> Q \<Longrightarrow> 
- (\<forall>j < length sq. fst(fst(sq!j)) = Skip \<longrightarrow> 
+ (\<forall>j < length sq. progOf(sq!j) = Skip \<longrightarrow> 
  (\<exists>i t tk. i \<le> j \<and> sq!i = ((Skip, t), tk) \<and> t \<in> Q))"
   by(simp add: TermCond_def)
 

@@ -87,7 +87,7 @@ definition HoareTripleRG_i :: "(nat \<Rightarrow> 's LA) \<Rightarrow> 's stater
 ("_ \<Turnstile>i {_ , _} _ {_ , _}" [40, 20, 20, 71, 20, 20] 71) 
 where "\<rho> \<Turnstile>i {R, P} p {Q, G} \<equiv> 
 (EnvCond \<rho> R \<inter> InitCond \<rho> P \<inter> \<lbrakk>p\<rbrakk>\<^sub>\<rho> \<subseteq> TermCond \<rho> Q \<inter> ProgCond \<rho> G) \<and>
-(EnvCond_i \<rho> R \<inter> InitCond_i \<rho> P \<inter> iCOMP \<rho> \<inter> {sq. fst(fst(sq 0)) = p} \<subseteq> 
+(EnvCond_i \<rho> R \<inter> InitCond_i \<rho> P \<inter> iCOMP \<rho> \<inter> {sq. progOf(sq 0) = p} \<subseteq> 
  TermCond_i \<rho> Q \<inter> ProgCond_i \<rho> G)"
 
 
@@ -95,6 +95,7 @@ abbreviation HoareTripleRGjf_i :: "'s staterel \<Rightarrow> 's set \<Rightarrow
                               's set \<Rightarrow> 's staterel \<Rightarrow> bool"
 ("\<Turnstile>i {_ , _} _ {_ , _}" [20, 20, 71, 20, 20] 71) 
 where "\<Turnstile>i {R, P} p {Q, G} \<equiv> (\<lambda>x. Skip) \<Turnstile>i {R, P} p {Q, G}"
+
 
 
 theorem HoareTripleRG_i :
@@ -132,7 +133,7 @@ theorem HoareTripleRG_i :
    apply(rule conjI)
     apply(simp add: EnvCond_def)
     apply(rule conjI)
-     apply(rule_tac x="fst(fst(isq 0))" in exI, simp add: pcs_def)
+     apply(rule_tac x="progOf(isq 0)" in exI, simp add: pcs_def)
      apply(subst hd_conv_nth, erule COMP_noNil)
      apply(simp add: fprefix_nth)
     apply(clarsimp simp: fprefix_length fprefix_nth)
@@ -140,7 +141,7 @@ theorem HoareTripleRG_i :
    apply(rule conjI)
     apply(simp add: InitCond_def)
     apply(rule conjI)
-     apply(rule_tac x="fst(fst(isq 0))" in exI, simp add: pcs_def)
+     apply(rule_tac x="progOf(isq 0)" in exI, simp add: pcs_def)
      apply(subst hd_conv_nth, erule COMP_noNil)
      apply(simp add: fprefix_nth)
     apply(subst hd_conv_nth, erule COMP_noNil)
@@ -149,7 +150,6 @@ theorem HoareTripleRG_i :
    apply(subst hd_conv_nth, erule COMP_noNil)
    apply(simp add: fprefix_nth)
   by assumption
-
 
 
 
@@ -292,6 +292,7 @@ print_translation \<open> let
    [(@{const_syntax HoareTripleRG2jf}, K rg2jf_tr)]
   end
 \<close>
+
 
 
 end
