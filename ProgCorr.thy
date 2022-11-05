@@ -45,6 +45,11 @@ abbreviation prog_mucorr'' :: "(nat \<Rightarrow> 'a LA) \<Rightarrow> 'a LA \<R
    where "\<rho> \<Turnstile> p \<approx>\<^bsub>r\<^esub> p' \<equiv> (p, p') \<in> prog_mucorr \<rho> \<rho> r"
 
 
+abbreviation prog_mucorr''' :: "'a LA \<Rightarrow> ('a \<times> 'b) set \<Rightarrow> 'b LA \<Rightarrow> bool" 
+   ("\<Turnstile> _ \<approx>\<^bsub>_\<^esub> _" [20, 10, 20] 71)
+   where "\<Turnstile> p \<approx>\<^bsub>r\<^esub> p' \<equiv> (p, p') \<in> prog_mucorr (\<lambda>x. Skip) (\<lambda>x. Skip) r"
+
+
 abbreviation prog_corr'' :: "(nat \<Rightarrow> 'a LA) \<Rightarrow> 'a LA \<Rightarrow> ('a \<times> 'a) set \<Rightarrow> 'a LA \<Rightarrow> bool" 
    ("_ \<Turnstile> _ \<sqsupseteq>\<^bsub>_\<^esub> _" [71, 20, 20, 20] 71)
    where "\<rho> \<Turnstile> p \<sqsupseteq>\<^bsub>r\<^esub> p' \<equiv> (p, p') \<in> prog_corr \<rho> \<rho> r"
@@ -59,7 +64,7 @@ abbreviation prog_corr'_id' :: "(nat \<Rightarrow> 'a LA) \<Rightarrow> 'a LA \<
    where "\<rho> \<Turnstile> p \<sqsupseteq> p' \<equiv> (p, p') \<in> prog_corr \<rho> \<rho> Id"
 
 
-abbreviation prog_corr''' :: "'a LA \<Rightarrow> ('a \<times> 'a) set \<Rightarrow> 'a LA \<Rightarrow> bool" 
+abbreviation prog_corr''' :: "'a LA \<Rightarrow> ('a \<times> 'b) set \<Rightarrow> 'b LA \<Rightarrow> bool" 
    ("\<Turnstile> _ \<sqsupseteq>\<^bsub>_\<^esub> _" [20, 20, 20] 71)
    where "\<Turnstile> p \<sqsupseteq>\<^bsub>r\<^esub> p' \<equiv> (p, p') \<in> prog_corr (\<lambda>x. Skip) (\<lambda>x. Skip) r"
 
