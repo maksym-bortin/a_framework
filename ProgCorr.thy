@@ -266,7 +266,7 @@ lemma small_step_eqv_trans :
 section "Further properties"
     
 lemma small_step_eqv_substL :
-"\<rho>, \<rho>' \<Turnstile> p \<sqsupseteq>\<^bsub>r\<^esub> p'' \<Longrightarrow> \<rho>, \<rho> \<Turnstile> p \<approx> p' \<Longrightarrow>
+"\<rho>, \<rho>' \<Turnstile> p \<sqsupseteq>\<^bsub>r\<^esub> p'' \<Longrightarrow> \<rho> \<Turnstile> p \<approx> p' \<Longrightarrow>
  \<rho>, \<rho>' \<Turnstile> p' \<sqsupseteq>\<^bsub>r\<^esub> p''"
   apply(clarsimp simp: small_step_eqv)
   apply(drule_tac p=p' in prog_corr_trans, assumption)
@@ -274,7 +274,7 @@ lemma small_step_eqv_substL :
   done
     
 lemma small_step_eqv_substR :
-"\<rho>, \<rho>' \<Turnstile> p'' \<sqsupseteq>\<^bsub>r\<^esub> p \<Longrightarrow> \<rho>', \<rho>' \<Turnstile> p \<approx> p' \<Longrightarrow>
+"\<rho>, \<rho>' \<Turnstile> p'' \<sqsupseteq>\<^bsub>r\<^esub> p \<Longrightarrow> \<rho>' \<Turnstile> p \<approx> p' \<Longrightarrow>
  \<rho>, \<rho>' \<Turnstile> p'' \<sqsupseteq>\<^bsub>r\<^esub> p'"
   apply(clarsimp simp: small_step_eqv)
   apply(drule_tac p=p'' in prog_corr_trans, assumption)    
