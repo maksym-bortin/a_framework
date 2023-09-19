@@ -1,6 +1,6 @@
 (* *********************************************************************
 
-    Theory Parallel_Inc.thy is part of a framework for modelling,
+    Theory Parallel_inc.thy is part of a framework for modelling,
     verification and transformation of concurrent imperative
     programs. Copyright (c) 2021  M. Bortin
 
@@ -12,7 +12,7 @@
     
    ******************************************************************* *)
 
-theory Parallel_Inc
+theory Parallel_inc
 imports RG_tactics
 begin
 
