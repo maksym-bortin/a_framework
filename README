@@ -17,7 +17,7 @@ It includes the following theories:
  - RG_tactics.thy       -- a simple verification conditions generator (VCG) 
                            applying the rules
  - Syntax_examples.thy  -- examples of syntactically correct programs
- - Parallel_Inc.thy     -- the 'parallel increment' example
+ - Parallel_inc.thy     -- the 'parallel increment' example
  - Mutex.thy            -- verification of a model of the Peterson's mutual exclusion algorithm
  
 Note: processing Rules.thy may take a few moments.
