@@ -20,14 +20,14 @@ begin
 
 section "Stepwise correspondence between programs"
   
-definition prog_corrC :: "(nat \<Rightarrow> 'a LA) \<Rightarrow> (nat \<Rightarrow> 'b LA) \<Rightarrow> ('a \<times> 'b) set \<Rightarrow> ('a LA \<times> 'b LA) set \<Rightarrow> bool"
-  where "prog_corrC \<rho> \<rho>' r X \<equiv> (\<forall>(p, p') \<in> X. \<forall>(s, t) \<in> r. \<forall>p'' t'. \<rho>' \<turnstile> (p', t) -p\<rightarrow> (p'', t') \<longrightarrow> 
+definition prog_sim :: "(nat \<Rightarrow> 'a LA) \<Rightarrow> (nat \<Rightarrow> 'b LA) \<Rightarrow> ('a \<times> 'b) set \<Rightarrow> ('a LA \<times> 'b LA) set \<Rightarrow> bool"
+  where "prog_sim \<rho> \<rho>' r X \<equiv> (\<forall>(p, p') \<in> X. \<forall>(s, t) \<in> r. \<forall>p'' t'. \<rho>' \<turnstile> (p', t) -p\<rightarrow> (p'', t') \<longrightarrow> 
                                  (\<exists>s' p'''. \<rho> \<turnstile> (p, s) -p\<rightarrow> (p''', s') \<and> (s', t') \<in> r \<and> (p''', p'') \<in> X)) \<and>
                                  (\<forall>p. (p, Skip) \<in> X \<longrightarrow> p = Skip) \<and>
                                  (\<forall>p. (Skip, p) \<in> X \<longrightarrow> p = Skip)"
   
 definition prog_corr :: "(nat \<Rightarrow> 'a LA) \<Rightarrow> (nat \<Rightarrow> 'b LA) \<Rightarrow> ('a \<times> 'b) set \<Rightarrow> ('a LA \<times> 'b LA) set"
-  where "prog_corr \<rho> \<rho>' r \<equiv> \<Union>{X. prog_corrC \<rho> \<rho>' r X}"
+  where "prog_corr \<rho> \<rho>' r \<equiv> \<Union>{X. prog_sim \<rho> \<rho>' r X}"
     
 abbreviation prog_corr' :: "(nat \<Rightarrow> 'a LA) \<Rightarrow> (nat \<Rightarrow> 'b LA) \<Rightarrow> 'a LA \<Rightarrow> ('a \<times> 'b) set \<Rightarrow> 'b LA \<Rightarrow> bool" 
    ("_, _ \<Turnstile> _ \<sqsupseteq>\<^bsub>_\<^esub> _" [71, 71, 20, 10, 20] 71)
@@ -83,37 +83,107 @@ abbreviation prog_mucorr'_id' :: "(nat \<Rightarrow> 'a LA) \<Rightarrow> 'a LA 
    where "\<rho> \<Turnstile> p \<approx> p' \<equiv> (p, p') \<in> prog_mucorr \<rho> \<rho> Id"
 
 
+subsection "A fixed point characterisation"
+
+definition "prod_rel X r = {((p, s), (q, t)) |p s q t. (p, q) \<in> X \<and> (s, t) \<in> r}"
+definition "pstepR \<rho> = {((p, s), (q, t)) |p s q t. \<rho> \<turnstile> (p, s) -p\<rightarrow> (q, t)}"
+definition "skip_cond X = (\<forall>(p,q)\<in>X. ((p = Skip) = (q = Skip)))"
+
+definition "Transf \<rho> \<rho>' r X = 
+ \<Union>{Y. prod_rel Y r O pstepR \<rho>' \<subseteq> pstepR \<rho> O prod_rel X r \<and> skip_cond Y}"
+
+lemma prod_rel_monoL :
+"A \<subseteq> B \<Longrightarrow> prod_rel A r \<subseteq> prod_rel B r"
+  by(clarsimp simp: prod_rel_def, fast)
+
+
+lemma prog_sim_postfix_eq :
+"prog_sim \<rho> \<rho>' r X = (X \<subseteq> Transf \<rho> \<rho>' r X)"
+  apply(clarsimp simp: prog_sim_def Transf_def)
+  apply(rule iffI)
+   apply(rule Union_upper, clarsimp)
+   apply(rule conjI, clarsimp simp: pstepR_def prod_rel_def)
+    apply(drule bspec, assumption, clarsimp)+
+    apply(drule spec, drule spec, drule mp, assumption)
+    apply(fastforce simp: relcompI)
+   apply(clarsimp simp: skip_cond_def, fast)
+  apply(rule conjI, clarsimp)
+   apply(drule subsetD, assumption, clarsimp)
+   apply(rename_tac p q s t q' t' Y)
+   apply(drule_tac c="((p, s), (q', t'))" in subsetD)
+    apply(fastforce simp: relcompI pstepR_def prod_rel_def)
+   apply(fastforce simp: relcompI pstepR_def prod_rel_def)
+  apply(rule conjI, clarsimp)
+  apply(drule subsetD, assumption, fastforce simp: skip_cond_def)
+  apply clarsimp
+  apply(drule subsetD, assumption, fastforce simp: skip_cond_def)
+  done
+
+lemma prog_corr_gfp_eq :
+"prog_corr \<rho> \<rho>' r = gfp (Transf \<rho> \<rho>' r)"
+  apply(simp add: prog_corr_def)
+  apply(subst prog_sim_postfix_eq)
+  apply(subst gfp_def)
+  by(rule refl)
+
+theorem prog_corr_fixed :
+"Transf \<rho> \<rho>' r(prog_corr \<rho> \<rho>' r) = prog_corr \<rho> \<rho>' r"
+  apply(subst prog_corr_gfp_eq)+
+  apply(rule sym, rule gfp_unfold)
+  apply(rule monoI)
+  apply(rename_tac A B, simp add: Transf_def)
+  apply(rule Union_least)
+  apply(rule Union_upper)
+  apply clarsimp
+  apply(drule_tac r=r in prod_rel_monoL)
+  apply(rename_tac p s p' s' q t)
+  apply(drule_tac c="((p, s), (q, t))" in subsetD, fast)
+  by fast
+
+corollary prog_corr_sim :
+"prog_sim \<rho> \<rho>' r (prog_corr \<rho> \<rho>' r)"
+  apply(subst prog_sim_postfix_eq)
+  apply(subst prog_corr_fixed)
+  by(rule subset_refl)
+
+lemmas prog_corr_prop1 = prog_corr_sim[simplified prog_sim_def split_def, THEN conjunct1, rule_format]
+lemmas prog_corr_prop2 = prog_corr_sim[simplified prog_sim_def split_def, THEN conjunct2, rule_format]
+
+
+
+section "Further properties"
+
 lemma small_step_eqv :
 "(\<rho>, \<rho>' \<Turnstile> p \<approx> p') = ((\<rho>, \<rho>' \<Turnstile> p \<sqsupseteq> p') \<and> (\<rho>', \<rho> \<Turnstile> p' \<sqsupseteq> p))"  
   by(simp add: prog_mucorr_def)
 
 
 
-lemma prog_corrC_skipD1 :
-"(Skip, p) \<in> X \<Longrightarrow> prog_corrC \<rho> \<rho>' r X \<Longrightarrow> p = Skip"
-  by(clarsimp simp: prog_corrC_def)  
+lemma prog_sim_skipD1 :
+"(Skip, p) \<in> X \<Longrightarrow> prog_sim \<rho> \<rho>' r X \<Longrightarrow> p = Skip"
+  by(clarsimp simp: prog_sim_def)  
     
-lemma prog_corrC_skipD2 :
-"(p, Skip) \<in> X \<Longrightarrow> prog_corrC \<rho> \<rho>' r X \<Longrightarrow> p = Skip"
-  by(clarsimp simp: prog_corrC_def)
+lemma prog_sim_skipD2 :
+"(p, Skip) \<in> X \<Longrightarrow> prog_sim \<rho> \<rho>' r X \<Longrightarrow> p = Skip"
+  by(clarsimp simp: prog_sim_def)
 
 
-lemma prog_corrC_step :
-"(p, p') \<in> X \<Longrightarrow> prog_corrC \<rho> \<rho>' r X \<Longrightarrow> (s, t) \<in> r \<Longrightarrow> \<rho>' \<turnstile> (p', t) -p\<rightarrow> (p'', t') \<Longrightarrow> 
+lemma prog_sim_step :
+"(p, p') \<in> X \<Longrightarrow> prog_sim \<rho> \<rho>' r X \<Longrightarrow> (s, t) \<in> r \<Longrightarrow> \<rho>' \<turnstile> (p', t) -p\<rightarrow> (p'', t') \<Longrightarrow> 
    \<exists>s' p'''. \<rho> \<turnstile> (p, s) -p\<rightarrow> (p''', s') \<and> (s', t') \<in> r \<and> (p''', p'') \<in> X"
-  apply(simp add: prog_corrC_def)
+  apply(simp add: prog_sim_def)
   apply(drule conjunct1)
   apply(drule bspec, assumption, simp)+
   done
 
-lemma prog_corrC_steps :
-"\<rho>' \<turnstile> (p', t) -p\<rightarrow>\<^sup>n (p'', t') \<Longrightarrow> (p, p') \<in> X \<Longrightarrow> prog_corrC \<rho> \<rho>' r X \<Longrightarrow> (s, t) \<in> r \<Longrightarrow> 
+lemma prog_sim_steps :
+"\<rho>' \<turnstile> (p', t) -p\<rightarrow>\<^sup>n (p'', t') \<Longrightarrow> (p, p') \<in> X \<Longrightarrow> prog_sim \<rho> \<rho>' r X \<Longrightarrow> (s, t) \<in> r \<Longrightarrow> 
    \<exists>s' p'''. \<rho> \<turnstile> (p, s) -p\<rightarrow>\<^sup>n (p''', s') \<and> (s', t') \<in> r \<and> (p''', p'') \<in> X"
   apply(induct n arbitrary: p s p' t p'' t', simp)
   apply clarsimp
   apply((drule meta_spec)+, (drule meta_mp, assumption)+)
   apply clarsimp
-  apply(drule_tac p=p''' in prog_corrC_step, assumption, assumption, assumption)
+  apply(drule_tac p=p''' in prog_sim_step, assumption, assumption, assumption)
   apply clarify
   apply(rename_tac s1 p1)
   apply(rule_tac x=s1 in exI, simp)
@@ -123,55 +193,55 @@ lemma prog_corrC_steps :
 
 
     
-lemma prog_corrC_skips :
-"prog_corrC \<rho> \<rho>' r {(Skip, Skip)}"    
-  apply(clarsimp simp: prog_corrC_def)
+lemma prog_sim_skips :
+"prog_sim \<rho> \<rho>' r {(Skip, Skip)}"    
+  apply(clarsimp simp: prog_sim_def)
   apply(erule Skip_pstep)
   done
 
 
-lemma prog_corrC_union :
-"prog_corrC \<rho> \<rho>' r X \<Longrightarrow> prog_corrC \<rho> \<rho>' r Z \<Longrightarrow> prog_corrC \<rho> \<rho>' r (X \<union> Z)"
-  apply(subst prog_corrC_def, simp)
+lemma prog_sim_union :
+"prog_sim \<rho> \<rho>' r X \<Longrightarrow> prog_sim \<rho> \<rho>' r Z \<Longrightarrow> prog_sim \<rho> \<rho>' r (X \<union> Z)"
+  apply(subst prog_sim_def, simp)
   apply(rule conjI, clarsimp)
    apply(erule disjE)
-    apply(drule prog_corrC_step, assumption+)
+    apply(drule prog_sim_step, assumption+)
     apply fastforce
-   apply(drule prog_corrC_step, assumption+)
+   apply(drule prog_sim_step, assumption+)
    apply fastforce
   apply(rule conjI, clarsimp)+
-    apply(erule prog_corrC_skipD2, assumption)
-    apply(clarify, erule prog_corrC_skipD2, assumption)    
+    apply(erule prog_sim_skipD2, assumption)
+    apply(clarify, erule prog_sim_skipD2, assumption)    
   apply clarsimp
-  apply(rule conjI, clarify, erule prog_corrC_skipD1, assumption)
-  apply(clarify, erule prog_corrC_skipD1, assumption)
+  apply(rule conjI, clarify, erule prog_sim_skipD1, assumption)
+  apply(clarify, erule prog_sim_skipD1, assumption)
   done
 
     
-lemma prog_corrC_Union :
-"\<forall>x \<in> S. prog_corrC \<rho> \<rho>' r x \<Longrightarrow> prog_corrC \<rho> \<rho>' r (\<Union>S)"    
-  apply(subst prog_corrC_def)
+lemma prog_sim_Union :
+"\<forall>x\<in>S. prog_sim \<rho> \<rho>' r x \<Longrightarrow> prog_sim \<rho> \<rho>' r (\<Union>S)"    
+  apply(subst prog_sim_def)
   apply(rule conjI, clarsimp)
    apply(drule bspec, assumption)
-   apply(drule prog_corrC_step, assumption+)
+   apply(drule prog_sim_step, assumption+)
    apply fastforce
   apply(rule conjI, clarsimp)
    apply(drule bspec, assumption)
-   apply(drule prog_corrC_skipD2, assumption+)
+   apply(drule prog_sim_skipD2, assumption+)
   apply clarsimp
   apply(drule bspec, assumption)
-  apply(drule prog_corrC_skipD1, assumption+)    
+  apply(drule prog_sim_skipD1, assumption+)    
   done
 
 
-lemma prog_corrC_comp :
-"prog_corrC \<rho> \<rho>' r1 X \<Longrightarrow> prog_corrC \<rho>' \<rho>'' r2 Z \<Longrightarrow>
- prog_corrC \<rho> \<rho>'' (r1 O r2) (X O Z)"
-  apply(subst prog_corrC_def, simp)
+lemma prog_sim_comp :
+"prog_sim \<rho> \<rho>' r1 X \<Longrightarrow> prog_sim \<rho>' \<rho>'' r2 X' \<Longrightarrow>
+ prog_sim \<rho> \<rho>'' (r1 O r2) (X O X')"
+  apply(subst prog_sim_def, simp)
   apply(rule conjI, clarsimp)
-   apply(frule prog_corrC_step, assumption, assumption, assumption)
+   apply(frule prog_sim_step, assumption, assumption, assumption)
    apply clarsimp
-   apply(drule prog_corrC_step, assumption, assumption, assumption)
+   apply(drule prog_sim_step, assumption, assumption, assumption)
    apply clarsimp
    apply(rename_tac t1 p1)
    apply(rule_tac x=t1 in exI)
@@ -179,46 +249,41 @@ lemma prog_corrC_comp :
    apply(rule conjI)
     apply(erule relcompI, assumption)+
   apply(rule conjI, clarsimp)
-   apply(drule prog_corrC_skipD2, assumption)
+   apply(drule prog_sim_skipD2, assumption)
    apply clarsimp
-   apply(drule prog_corrC_skipD2, assumption+)
+   apply(drule prog_sim_skipD2, assumption+)
   apply clarify
-  apply(drule prog_corrC_skipD1, assumption)
+  apply(drule prog_sim_skipD1, assumption)
   apply clarsimp    
-  apply(drule prog_corrC_skipD1, assumption+)
+  apply(drule prog_sim_skipD1, assumption+)
   done
 
 
-lemma prog_corrC_Id :
-"prog_corrC \<rho> \<rho> Id Id"
-  by(clarsimp simp: prog_corrC_def)
+lemma prog_sim_Id :
+"prog_sim \<rho> \<rho> Id Id"
+  by(clarsimp simp: prog_sim_def)
 
 
 lemma prog_corr_skipD1 :
 "\<rho>, \<rho>' \<Turnstile> SKIP \<sqsupseteq>\<^bsub>r\<^esub> p \<Longrightarrow> p = SKIP"
-  by(clarsimp simp: prog_corr_def, erule prog_corrC_skipD1, assumption)  
+  by(clarsimp simp: prog_corr_prop2)  
     
 lemma prog_corr_skipD2 :
 "\<rho>, \<rho>' \<Turnstile> p \<sqsupseteq>\<^bsub>r\<^esub> SKIP \<Longrightarrow> p = SKIP"
-  by(clarsimp simp: prog_corr_def, erule prog_corrC_skipD2, assumption)  
+  by(clarsimp simp: prog_corr_prop2)  
 
-
-lemma prog_corr_step :
-"\<rho>, \<rho>' \<Turnstile> p \<sqsupseteq>\<^bsub>r\<^esub> p' \<Longrightarrow> (s, t) \<in> r \<Longrightarrow> \<rho>' \<turnstile> (p', t) -p\<rightarrow> (p'', t') \<Longrightarrow> 
- \<exists>s' p'''. \<rho> \<turnstile> (p, s) -p\<rightarrow> (p''', s') \<and> (s', t') \<in> r \<and> \<rho>, \<rho>' \<Turnstile> p''' \<sqsupseteq>\<^bsub>r\<^esub> p''"
-  apply(clarsimp simp: prog_corr_def)
-  apply(drule prog_corrC_step, assumption+)
-  by fastforce
+lemmas prog_corr_step = prog_sim_step[OF _ prog_corr_sim]
+lemmas prog_corr_steps = prog_sim_steps[OF _ _ prog_corr_sim, rotated 1]
 
 
 lemma prog_corr_trans :
 "\<rho>, \<rho>' \<Turnstile> p \<sqsupseteq>\<^bsub>r1\<^esub> p' \<Longrightarrow> \<rho>', \<rho>'' \<Turnstile> p' \<sqsupseteq>\<^bsub>r2\<^esub> p'' \<Longrightarrow>
  \<rho>, \<rho>'' \<Turnstile> p \<sqsupseteq>\<^bsub>r1 O r2\<^esub> p''"
   apply(clarsimp simp: prog_corr_def)
-  apply(rename_tac X Z)
-  apply(rule_tac x="X O Z" in exI)
+  apply(rename_tac X X')
+  apply(rule_tac x="X O X'" in exI)
   apply(rule conjI)
-   apply(erule prog_corrC_comp, assumption)
+   apply(erule prog_sim_comp, assumption)
   apply(erule relcompI, assumption)
   done
 
@@ -230,7 +295,7 @@ lemmas prog_corr_trans_IdR = prog_corr_trans[where ?r2.0=Id, simplified]
 lemma prog_corr_refl :
 "\<rho> \<Turnstile> p \<sqsupseteq> p"
   apply(simp add: prog_corr_def)
-  apply(rule exI, rule conjI, rule prog_corrC_Id)
+  apply(rule exI, rule conjI, rule prog_sim_Id)
   by simp
 
 lemma small_step_eqvD1 :
@@ -293,7 +358,7 @@ lemma prog_corr_seq_assoc1 :
   apply(rule_tac x="{(Seq (Seq x q) v, Seq x' (Seq q' v')) | x x'. (x, x') \<in> P} \<union> 
                     {(Seq x v, Seq x' v') | x x'. (x, x') \<in> Q} \<union> V \<union> {(Skip, Skip)}" in exI)
   apply simp
-  apply(subst prog_corrC_def)
+  apply(subst prog_sim_def)
   apply clarsimp
   apply(rule conjI)
    apply clarsimp
@@ -303,7 +368,7 @@ lemma prog_corr_seq_assoc1 :
    apply(rename_tac s t p'' t')
    apply(erule disjE, clarsimp)
     apply(case_tac "x' = SKIP", clarify)
-     apply(drule prog_corrC_skipD2, assumption)
+     apply(drule prog_sim_skipD2, assumption)
      apply(drule Seq_pstep_Skip, clarsimp)
      apply(rule_tac x=s in exI, simp)
      apply(rule exI, rule conjI)
@@ -311,7 +376,7 @@ lemma prog_corr_seq_assoc1 :
      apply fast
     apply(drule Seq_pstep, assumption)
     apply clarsimp
-    apply(drule_tac X=P and p=x in prog_corrC_step[rotated -1], assumption+)
+    apply(drule_tac X=P and p=x in prog_sim_step[rotated -1], assumption+)
     apply clarsimp
     apply(rule_tac x=s' in exI, simp)
     apply(rule exI, rule conjI)
@@ -319,7 +384,7 @@ lemma prog_corr_seq_assoc1 :
     apply fast
    apply(erule disjE, clarsimp)
     apply(case_tac "x' = SKIP", clarify)
-     apply(drule prog_corrC_skipD2, assumption)
+     apply(drule prog_sim_skipD2, assumption)
      apply(drule Seq_pstep_Skip, clarsimp)
      apply(rule_tac x=s in exI, simp)
      apply(rule exI, rule conjI)
@@ -327,18 +392,18 @@ lemma prog_corr_seq_assoc1 :
      apply fast
     apply(drule Seq_pstep, assumption)
     apply clarsimp
-    apply(drule_tac X=Q and p=x in prog_corrC_step[rotated -1], assumption+)
+    apply(drule_tac X=Q and p=x in prog_sim_step[rotated -1], assumption+)
     apply clarsimp
     apply(rule_tac x=s' in exI, simp)
     apply(rule exI, rule conjI)
      apply(erule pstep.Seq)
     apply fast
-   apply(drule_tac X=V in prog_corrC_step[rotated -1], assumption+)  
+   apply(drule_tac X=V in prog_sim_step[rotated -1], assumption+)  
    apply fast
   apply(rule conjI, clarsimp)
-   apply(erule prog_corrC_skipD2, assumption)
+   apply(erule prog_sim_skipD2, assumption)
   apply clarsimp
-  apply(erule prog_corrC_skipD1, assumption)
+  apply(erule prog_sim_skipD1, assumption)
   done
 
 
@@ -350,7 +415,7 @@ lemma prog_corr_seq_assoc2 :
   apply(rule_tac x="{(Seq x (Seq q v), Seq (Seq x' q') v') | x x'. (x, x') \<in> P} \<union> 
                     {(Seq x v, Seq x' v') | x x'. (x, x') \<in> Q} \<union> V \<union> {(Skip, Skip)}" in exI)
   apply simp
-  apply(subst prog_corrC_def)
+  apply(subst prog_sim_def)
   apply clarsimp
   apply(rule conjI)
    apply clarsimp
@@ -361,21 +426,21 @@ lemma prog_corr_seq_assoc2 :
    apply(erule disjE, clarsimp)
     apply(drule Seq_pstep, simp, clarsimp)
     apply(case_tac "x' = SKIP", clarify)
-     apply(drule prog_corrC_skipD2, assumption)
+     apply(drule prog_sim_skipD2, assumption)
      apply(drule Seq_pstep_Skip, clarsimp)
      apply(rule_tac x=s in exI, simp)
      apply(rule exI, rule conjI)
       apply(rule pstep.SeqSkip)
      apply fast
     apply(drule Seq_pstep, simp, clarsimp)
-    apply(drule_tac X=P and p=x in prog_corrC_step[rotated -1], assumption+)
+    apply(drule_tac X=P and p=x in prog_sim_step[rotated -1], assumption+)
     apply clarsimp
     apply(rule_tac x=s' in exI, simp)
     apply(rule exI, rule conjI)
      apply(erule pstep.Seq, fast)
    apply(erule disjE, clarsimp)
     apply(case_tac "x' = SKIP", clarify)
-     apply(drule prog_corrC_skipD2, assumption)
+     apply(drule prog_sim_skipD2, assumption)
      apply(drule Seq_pstep_Skip, clarsimp)
      apply(rule_tac x=s in exI, simp)
      apply(rule exI, rule conjI)
@@ -383,18 +448,18 @@ lemma prog_corr_seq_assoc2 :
      apply fast
     apply(drule Seq_pstep, assumption)
     apply clarsimp
-    apply(drule_tac X=Q and p=x in prog_corrC_step[rotated -1], assumption+)
+    apply(drule_tac X=Q and p=x in prog_sim_step[rotated -1], assumption+)
     apply clarsimp
     apply(rule_tac x=s' in exI, simp)
     apply(rule exI, rule conjI)
      apply(erule pstep.Seq)
     apply fast
-   apply(drule_tac X=V in prog_corrC_step[rotated -1], assumption+)  
+   apply(drule_tac X=V in prog_sim_step[rotated -1], assumption+)  
    apply fast
   apply(rule conjI, clarsimp)
-   apply(erule prog_corrC_skipD2, assumption)
+   apply(erule prog_sim_skipD2, assumption)
   apply clarsimp
-  apply(erule prog_corrC_skipD1, assumption)
+  apply(erule prog_sim_skipD1, assumption)
   done
 
 
@@ -414,14 +479,14 @@ lemma prog_corr_skips :
 "\<rho>, \<rho>' \<Turnstile> SKIP \<sqsupseteq>\<^bsub>r\<^esub> SKIP"
   apply(simp add: prog_corr_def)
   apply(rule_tac x="{(Skip, Skip)}" in exI, simp)
-  by(rule prog_corrC_skips)
+  by(rule prog_sim_skips)
 
 
 lemma prog_corr_basics : 
 "(\<And>s t. (s, t) \<in> r \<Longrightarrow> (f s, f' t) \<in> r) \<Longrightarrow>
   \<rho>, \<rho>' \<Turnstile> Basic f \<sqsupseteq>\<^bsub>r\<^esub> Basic f'" 
   apply(simp add: prog_corr_def)
-  apply(rule_tac x="{(Basic f, Basic f'), (Skip, Skip)}" in exI, simp add: prog_corrC_def)
+  apply(rule_tac x="{(Basic f, Basic f'), (Skip, Skip)}" in exI, simp add: prog_sim_def)
   apply(rule conjI, clarsimp)
    apply(drule Basic_pstep, clarsimp)
    apply(drule meta_spec, drule meta_spec, drule meta_mp, assumption)
@@ -439,7 +504,7 @@ lemma prog_corr_cjumps :
   apply(simp add: prog_corr_def, clarify)
   apply(rename_tac X Z)
   apply(rule_tac x="{(CJump C i p, CJump C' j p')} \<union> X \<union> Z" in exI, simp)
-  apply(subst prog_corrC_def, simp)
+  apply(subst prog_sim_def, simp)
   apply(rule conjI, clarsimp)
    apply(drule CJump_pstep, clarify)
    apply(erule disjE, clarsimp)
@@ -454,17 +519,17 @@ lemma prog_corr_cjumps :
    apply simp
   apply(rule conjI, clarsimp)
    apply(erule disjE)
-    apply(drule prog_corrC_step[rotated -1], assumption+)
+    apply(drule prog_sim_step[rotated -1], assumption+)
     apply fast
-   apply(drule prog_corrC_step[rotated -1], assumption+)
+   apply(drule prog_sim_step[rotated -1], assumption+)
    apply fast
   apply(rule conjI, clarify)+
-    apply(rule prog_corrC_skipD2, assumption+)
-   apply(clarify, rule prog_corrC_skipD2, assumption+)
+    apply(rule prog_sim_skipD2, assumption+)
+   apply(clarify, rule prog_sim_skipD2, assumption+)
   apply clarify
   apply(rule conjI, clarify)+
-   apply(rule prog_corrC_skipD1, assumption+)
-  apply(clarify, rule prog_corrC_skipD1, assumption+)
+   apply(rule prog_sim_skipD1, assumption+)
+  apply(clarify, rule prog_sim_skipD1, assumption+)
   done
 
 
@@ -485,7 +550,7 @@ lemma prog_corr_whiles :
                     {(u ; (SKIP ; While C I p q), 
                       v ; (SKIP ; While C' I' p' q')) | u v. (u, v) \<in> X} \<union>
                      Z" in exI, simp)
-  apply(subst prog_corrC_def, simp)
+  apply(subst prog_sim_def, simp)
   apply(rule conjI, clarsimp)
    apply(drule Seq_pstep_Skip, clarify)
   apply(intro exI, rule conjI, rule pstep.SeqSkip, fast)
@@ -501,18 +566,18 @@ lemma prog_corr_whiles :
   apply(rule conjI, clarsimp)
    apply(erule disjE, clarify)
     apply(case_tac "v=SKIP", clarify)
-     apply(drule prog_corrC_skipD2, assumption, clarify)
+     apply(drule prog_sim_skipD2, assumption, clarify)
      apply(drule Seq_pstep_Skip, clarify)
      apply(intro exI, rule conjI, rule pstep.SeqSkip, fast)
     apply(drule Seq_pstep, simp, clarify)
-    apply(drule prog_corrC_step[rotated -1], assumption+)
+    apply(drule prog_sim_step[rotated -1], assumption+)
     apply clarsimp
     apply(intro exI, rule conjI, erule pstep.Seq, fast)
-   apply(drule prog_corrC_step[rotated -1], assumption+)
+   apply(drule prog_sim_step[rotated -1], assumption+)
    apply fast
   apply(rule conjI, clarify)
-   apply(rule prog_corrC_skipD2, assumption+)
-  apply(clarify, rule prog_corrC_skipD1, assumption+)
+   apply(rule prog_sim_skipD2, assumption+)
+  apply(clarify, rule prog_sim_skipD1, assumption+)
   done
 
 
@@ -528,10 +593,10 @@ theorem prog_corr_parallels :
   apply clarsimp
   apply(rename_tac Xs)
   apply(rule_tac x="{(Parallel u, Parallel v) |u v. length u = length v \<and> length v = length Xs \<and>
-                     (\<forall>i<length v. prog_corrC \<rho> \<rho>' r (Xs ! i) \<and> (fst (u ! \<sigma> i), fst (v ! i)) \<in> Xs ! i)}
+                     (\<forall>i<length v. prog_sim \<rho> \<rho>' r (Xs ! i) \<and> (fst (u ! \<sigma> i), fst (v ! i)) \<in> Xs ! i)}
                     \<union> {(Skip, Skip)}" 
         in exI, simp) 
-  apply(subst prog_corrC_def, clarsimp)
+  apply(subst prog_sim_def, clarsimp)
   apply(rule conjI, clarsimp)
    apply(erule Skip_pstep)
   apply clarsimp
@@ -539,7 +604,7 @@ theorem prog_corr_parallels :
   apply(drule Parallel_pstep)
   apply(erule disjE, clarsimp)
    apply(frule_tac x=i in spec, drule mp, assumption, erule conjE)
-   apply(drule_tac X="Xs!i" in prog_corrC_step[rotated -1], assumption+)
+   apply(drule_tac X="Xs!i" in prog_sim_step[rotated -1], assumption+)
    apply clarify
    apply(rule_tac x=s' in exI)
   apply(rule exI, rule conjI, erule_tac i="\<sigma> i" in pstep.Parallel, simp, clarsimp)
@@ -557,7 +622,7 @@ theorem prog_corr_parallels :
    apply(drule_tac x=i in spec, drule mp, assumption, erule exE)
    apply(rename_tac j, clarify)
    apply(drule_tac x=j in spec, drule mp, assumption, erule conjE)
-   apply(drule prog_corrC_skipD2, assumption)
+   apply(drule prog_sim_skipD2, assumption)
    apply(drule_tac f=fst in arg_cong, simp)
   by assumption
 
@@ -589,7 +654,7 @@ lemma prog_corr_parallel_app :
                        (Parallel xs, Parallel xs') \<in> A \<and> length xs = length xs' \<and>
                        (Parallel zs, Parallel zs') \<in> B \<and> length zs = length zs'}
                     \<union> {(Skip, Skip)}" in exI, simp)
-  apply(subst prog_corrC_def, clarsimp)
+  apply(subst prog_sim_def, clarsimp)
   apply(rule conjI, clarsimp)
    apply(erule Skip_pstep)
   apply(rule conjI, clarsimp)
@@ -597,7 +662,7 @@ lemma prog_corr_parallel_app :
    apply(erule disjE, clarsimp)
     apply(case_tac "i < length xs'")
      apply(subst (asm) nth_append, simp)
-     apply(frule_tac p'="Parallel xs'" and X=A in prog_corrC_step[rotated 1], assumption)
+     apply(frule_tac p'="Parallel xs'" and X=A in prog_sim_step[rotated 1], assumption)
        apply(erule pstep.Parallel, assumption+)
      apply clarsimp
      apply(drule Parallel_pstep)
@@ -611,11 +676,11 @@ lemma prog_corr_parallel_app :
       apply(intro exI, rule conjI, rule refl)+
       apply simp
      apply clarsimp
-     apply(drule_tac X=A in prog_corrC_skipD1, assumption)
+     apply(drule_tac X=A in prog_sim_skipD1, assumption)
      apply clarify
     apply(drule leI)
     apply(subst (asm) nth_append, simp)
-    apply(frule_tac p'="Parallel zs'" and X=B in prog_corrC_step[rotated 1], assumption)
+    apply(frule_tac p'="Parallel zs'" and X=B in prog_sim_step[rotated 1], assumption)
       apply(erule pstep.Parallel, simp, assumption+)
     apply clarsimp
     apply(drule Parallel_pstep)
@@ -629,21 +694,21 @@ lemma prog_corr_parallel_app :
      apply(intro exI, rule conjI, rule refl)+
      apply simp
     apply clarsimp
-    apply(drule_tac X=B in prog_corrC_skipD1, assumption)
+    apply(drule_tac X=B in prog_sim_skipD1, assumption)
     apply clarify
    apply clarsimp
    apply(rule exI, rule conjI)
     apply(rule pstep.ParallelSkip)
-    apply(frule_tac p="Parallel xs" in prog_corrC_step, assumption+)
+    apply(frule_tac p="Parallel xs" in prog_sim_step, assumption+)
      apply(rule pstep.ParallelSkip, clarsimp)
     apply clarsimp
-    apply(drule_tac X=A in prog_corrC_skipD2, assumption)
+    apply(drule_tac X=A in prog_sim_skipD2, assumption)
     apply clarify
     apply(drule Parallel_pstep_to_Skip)
-    apply(frule_tac p="Parallel zs" in prog_corrC_step, assumption+)
+    apply(frule_tac p="Parallel zs" in prog_sim_step, assumption+)
      apply(rule pstep.ParallelSkip, clarsimp)
     apply clarsimp
-    apply(drule_tac X=B in prog_corrC_skipD2, assumption)
+    apply(drule_tac X=B in prog_sim_skipD2, assumption)
     apply clarify
     apply(drule Parallel_pstep_to_Skip)
     apply fastforce
@@ -677,27 +742,27 @@ lemma prog_corr_seqs :
   apply(clarsimp simp: prog_corr_def)
   apply(rename_tac X Z)
   apply(rule_tac x="{(Seq u q, Seq v q') | u v. (u, v) \<in> X} \<union> Z" in exI, simp) 
-  apply(subst prog_corrC_def, simp)
+  apply(subst prog_sim_def, simp)
   apply(rule conjI, clarsimp)
    apply(erule disjE, clarsimp)
   apply(case_tac "v=Skip", clarify)
-     apply(drule prog_corrC_skipD2, assumption)
+     apply(drule prog_sim_skipD2, assumption)
      apply clarify
      apply(drule Seq_pstep_Skip, clarsimp)
      apply(intro exI, rule conjI, rule pstep.SeqSkip)
      apply fast
     apply(drule Seq_pstep, assumption)
     apply clarsimp
-    apply(drule_tac p'=v in prog_corrC_step, assumption+)
+    apply(drule_tac p'=v in prog_sim_step, assumption+)
     apply clarify
     apply(intro exI, rule conjI, erule pstep.Seq)
     apply fast
-   apply(drule_tac X=Z in prog_corrC_step[rotated 2], assumption+)
+   apply(drule_tac X=Z in prog_sim_step[rotated 2], assumption+)
    apply fast
   apply(rule conjI, clarsimp)
-   apply(erule prog_corrC_skipD2, assumption)
+   apply(erule prog_sim_skipD2, assumption)
   apply clarify
-  apply(erule prog_corrC_skipD1, assumption)
+  apply(erule prog_sim_skipD1, assumption)
   done
 
 
@@ -709,7 +774,7 @@ lemma prog_corr_conds :
   apply(clarsimp simp: prog_corr_def)
   apply(rename_tac X Z)
   apply(rule_tac x="{(Cond C p q, Cond C' p' q')} \<union> X \<union> Z" in exI, simp) 
-  apply(subst prog_corrC_def, simp)
+  apply(subst prog_sim_def, simp)
   apply(rule conjI, clarsimp)
    apply(drule Cond_pstep, clarify)
    apply(erule disjE, clarsimp)
@@ -722,19 +787,19 @@ lemma prog_corr_conds :
    apply(rule exI, rule conjI, rule pstep.CondF, fast, fast)
   apply(rule conjI, clarsimp)
    apply(erule disjE)
-    apply(drule_tac X=X in prog_corrC_step[rotated 2], assumption+)
+    apply(drule_tac X=X in prog_sim_step[rotated 2], assumption+)
     apply fast
-   apply(drule_tac X=Z in prog_corrC_step[rotated 2], assumption+)
+   apply(drule_tac X=Z in prog_sim_step[rotated 2], assumption+)
    apply fast
   apply(rule conjI, clarsimp)+
-    apply(erule prog_corrC_skipD2, assumption)
+    apply(erule prog_sim_skipD2, assumption)
    apply clarify
-   apply(erule prog_corrC_skipD2, assumption)
+   apply(erule prog_sim_skipD2, assumption)
   apply(rule allI, rule conjI)
    apply clarify
-   apply(erule prog_corrC_skipD1, assumption)
+   apply(erule prog_sim_skipD1, assumption)
   apply clarify
-  apply(erule prog_corrC_skipD1, assumption)
+  apply(erule prog_sim_skipD1, assumption)
   done
 
 
@@ -745,24 +810,24 @@ lemma prog_corr_awaits :
   apply(clarsimp simp: prog_corr_def)
   apply(rename_tac X)
   apply(rule_tac x="{(Await C a p, Await C' a' p')} \<union> X" in exI, simp)
-  apply(subst prog_corrC_def, simp)
+  apply(subst prog_sim_def, simp)
   apply(rule conjI, clarsimp)
    apply(drule Await_pstep, clarify)
    apply(subst (asm) rtranclp_power, clarify)
-   apply(drule prog_corrC_steps[rotated 1], assumption+)
+   apply(drule prog_sim_steps[rotated 1], assumption+)
    apply clarify
-   apply(frule prog_corrC_skipD2, assumption)
+   apply(frule prog_sim_skipD2, assumption)
    apply clarify
    apply(drule rtranclp_power[THEN iffD2, OF exI])+
    apply(intro exI, rule conjI, rule pstep.Await, fast, assumption)
    apply simp
   apply(rule conjI, clarsimp)
-   apply(drule_tac X=X in prog_corrC_step[rotated 2], assumption+)
+   apply(drule_tac X=X in prog_sim_step[rotated 2], assumption+)
    apply fast
   apply(rule conjI, clarsimp)
-   apply(erule prog_corrC_skipD2, assumption)
+   apply(erule prog_sim_skipD2, assumption)
   apply clarify
-  apply(erule prog_corrC_skipD1, assumption)
+  apply(erule prog_sim_skipD1, assumption)
   done
 
 
@@ -771,7 +836,7 @@ lemma prog_corr_await_basic :
  \<rho>, \<rho>' \<Turnstile> (AWAIT C \<lbrakk>ann: a\<rbrakk> THEN p END) \<sqsupseteq>\<^bsub>r\<^esub> Basic f"
   apply(clarsimp simp: prog_corr_def)
   apply(rule_tac x="{(Await C a p, Basic f), (SKIP, SKIP)}" in exI, simp)
-  apply(simp add: prog_corrC_def)
+  apply(simp add: prog_sim_def)
   apply(rule conjI, clarsimp)
    apply(drule Basic_pstep, clarify)
    apply(drule bspec, assumption)
@@ -831,7 +896,7 @@ lemma prog_corr_basic_await :
  \<rho>, \<rho>' \<Turnstile> Basic f \<sqsupseteq>\<^bsub>r\<^esub> (AWAIT C \<lbrakk>ann: a\<rbrakk> THEN p END)"
   apply(clarsimp simp: prog_corr_def)
   apply(rule_tac x="{(Basic f, Await C a p), (SKIP, SKIP)}" in exI, simp)
-  apply(simp add: prog_corrC_def)
+  apply(simp add: prog_sim_def)
   apply(rule conjI, clarsimp)
    apply(drule bspec, assumption)
    apply clarsimp
@@ -854,7 +919,7 @@ lemma prog_corr_seqN_cond1 :
       IF C THEN p;r ELSE q;r FI"
   apply(simp add: prog_corr_def)
   apply(rule_tac x="{(Seq (Cond C p q) r, Cond C (Seq p r) (Seq q r))} \<union> Id" in exI, simp)
-  apply(simp (no_asm) add: prog_corrC_def)
+  apply(simp (no_asm) add: prog_sim_def)
   apply(rule conjI, clarsimp)
    apply(drule Cond_pstep, clarify)
    apply(erule disjE, clarify)
@@ -869,7 +934,7 @@ lemma prog_corr_seqN_cond2 :
       (IF C THEN p ELSE q FI; r)"
   apply(simp add: prog_corr_def)
   apply(rule_tac x="{(Cond C (Seq p r) (Seq q r), Seq (Cond C p q) r)} \<union> Id" in exI, simp)
-  apply(simp (no_asm) add: prog_corrC_def)
+  apply(simp (no_asm) add: prog_sim_def)
   apply(rule conjI, clarsimp)
    apply(drule Seq_pstep, simp, clarsimp)
    apply(drule Cond_pstep, clarify)
@@ -896,7 +961,7 @@ lemma prog_corr_seqN_while1 :
                       Seq Skip (While C I' p (Seq q r)))} \<union>
                      {(Seq (Seq u (Seq Skip (While C I p q))) r, 
                        Seq u (Seq Skip (While C I' p (Seq q r)))) |u. u \<in> UNIV} \<union> Id" in exI, simp)
-  apply(simp (no_asm) add: prog_corrC_def)
+  apply(simp (no_asm) add: prog_sim_def)
   apply(rule conjI, clarsimp)
    apply(drule While_pstep, clarify)
    apply(erule disjE, clarsimp)
@@ -935,7 +1000,7 @@ lemma prog_corr_seqN_while2 :
                       Seq (Seq Skip (While C I' p q)) r)} \<union>
                      {(Seq u (Seq Skip (While C I p (Seq q r))), 
                        Seq (Seq u (Seq Skip (While C I' p q))) r) |u. u \<in> UNIV} \<union> Id" in exI, simp)
-  apply(simp (no_asm) add: prog_corrC_def)
+  apply(simp (no_asm) add: prog_sim_def)
   apply(rule conjI, clarsimp)
    apply(drule Seq_pstep, simp)
    apply clarsimp
@@ -983,7 +1048,7 @@ lemma prog_corr_condN1 :
           CJUMP -C TO j OTHERWISE p END"
   apply(clarsimp simp:prog_corr_def)
   apply(rule_tac x="{(IF C THEN p ELSE q FI, CJUMP -C TO j OTHERWISE p END)} \<union> Id" in exI, simp)
-  apply(simp (no_asm) add: prog_corrC_def)
+  apply(simp (no_asm) add: prog_sim_def)
   apply(rule conjI, clarsimp)
    apply(drule CJump_pstep, clarify)
    apply(erule disjE, clarsimp)
@@ -1000,7 +1065,7 @@ lemma prog_corr_condN2 :
  \<rho> \<Turnstile> CJUMP -C TO j OTHERWISE p END \<sqsupseteq> IF C THEN p ELSE q FI"
   apply(clarsimp simp:prog_corr_def)
   apply(rule_tac x="{(CJUMP -C TO j OTHERWISE p END, IF C THEN p ELSE q FI)} \<union> Id" in exI, simp)
-  apply(simp (no_asm) add: prog_corrC_def)
+  apply(simp (no_asm) add: prog_sim_def)
   apply(rule conjI, clarsimp)
    apply(drule Cond_pstep, clarify)
    apply(erule disjE, clarsimp)
@@ -1037,7 +1102,7 @@ lemma eqv_while_cjump :
                      (Seq Skip (While C I p q), Jump j)} \<union>
           {(Seq u (Seq Skip (While C I p q)), Seq u (Jump j)) |u. u \<in> UNIV} \<union> Id" 
      in exI)
-   apply(simp add: prog_corrC_def)
+   apply(simp add: prog_sim_def)
    apply(rule conjI, clarsimp)
     apply(drule CJump_pstep, clarsimp)
     apply(erule disjE, clarsimp)
@@ -1063,7 +1128,7 @@ lemma eqv_while_cjump :
                      (Jump j, Seq Skip (While C I p q))} \<union>
           {(Seq u (Jump j), Seq u (Seq Skip (While C I p q))) |u. u \<in> UNIV} \<union> Id" 
      in exI)
-  apply(simp add: prog_corrC_def)
+  apply(simp add: prog_sim_def)
   apply(rule conjI, clarsimp)
    apply(drule While_pstep, clarsimp)
    apply(erule disjE, clarsimp)

@@ -118,8 +118,7 @@ definition
 
 section "Properties"
   
-definition "mutexR0 = {((s :: ('a, 'b) mutex_scheme), (t :: ('a, 'b) mutex_scheme)). 
-                       turn_aux0 t \<and> flag0 t \<and> cond0 t \<and> s = t}"  
+definition "mutexR0 = {(s, t). turn_aux0 t \<and> flag0 t \<and> cond0 t \<and> s = t}"  
 
 lemma thread0_aux:
 " \<Turnstile> cs0 
@@ -163,10 +162,9 @@ lemma thread0_aux:
   done
 
     
+definition "mutexR1 = {(s, t). s = t \<and> turn_aux1 t \<and> flag1 t \<and> cond1 t}"  
 
-definition "mutexR1 = {((s :: ('a, 'b) mutex_scheme), (t :: ('a, 'b) mutex_scheme)). 
-                       s = t \<and> turn_aux1 t \<and> flag1 t \<and> cond1 t}"  
-    
+
 lemma thread1_aux:
 " \<Turnstile> cs1 
   RELY \<lbrace> \<ordmasculine>local1 = \<ordfeminine>local1 \<and> \<ordmasculine>shared = \<ordfeminine>shared \<rbrace>
@@ -243,13 +241,12 @@ lemma mutex_aux :
     
 section "The property of mutex by program correspondence"
   
-definition "mutexR = {((s :: ('a, 'b) mutex_scheme), (t :: ('a, 'b) mutex_scheme)). 
-                       flag0 s = flag0 t \<and>
-                       flag1 s = flag1 t \<and>
-                       turn s = turn t \<and>
-                       shared s = shared t \<and>
-                       local0 s = local0 t \<and>
-                       local1 s = local1 t}"
+definition "mutexR = {(s, t). flag0 s = flag0 t \<and>
+                              flag1 s = flag1 t \<and>
+                              turn s = turn t \<and>
+                              shared s = shared t \<and>
+                              local0 s = local0 t \<and>
+                              local1 s = local1 t}"
   
   
  
@@ -466,7 +463,7 @@ corollary concurrent_upds_eq :
 
 
 
-section "Deriving the global guarantees relevant for liveness"
+section "Deriving the global guarantees for liveness"
 
 
 definition 
