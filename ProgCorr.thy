@@ -127,7 +127,7 @@ lemma prog_corr_gfp_eq :
   by(rule refl)
 
 theorem prog_corr_fixed :
-"Transf \<rho> \<rho>' r(prog_corr \<rho> \<rho>' r) = prog_corr \<rho> \<rho>' r"
+"Transf \<rho> \<rho>' r (prog_corr \<rho> \<rho>' r) = prog_corr \<rho> \<rho>' r"
   apply(subst prog_corr_gfp_eq)+
   apply(rule sym, rule gfp_unfold)
   apply(rule monoI)
@@ -149,6 +149,31 @@ corollary prog_corr_sim :
 lemmas prog_corr_prop1 = prog_corr_sim[simplified prog_sim_def split_def, THEN conjunct1, rule_format]
 lemmas prog_corr_prop2 = prog_corr_sim[simplified prog_sim_def split_def, THEN conjunct2, rule_format]
 
+
+lemma mucorr_id_postfix_bisim :
+"(prog_mucorr \<rho> \<rho> Id :: ('a LA \<times> 'a LA) set) \<subseteq> Transf \<rho> \<rho> Id (prog_mucorr \<rho> \<rho> Id) \<Longrightarrow>
+ \<rho> \<Turnstile> p \<approx> q \<Longrightarrow>
+ (\<forall>q' t. \<rho> \<turnstile> (q, s) -p\<rightarrow> (q', t) \<longrightarrow> 
+   (\<exists>p'. \<rho> \<turnstile> (p, s) -p\<rightarrow> (p', t) \<and> \<rho> \<Turnstile> p' \<approx> q')) \<and>
+ (\<forall>p' t. \<rho> \<turnstile> (p, s) -p\<rightarrow> (p', t) \<longrightarrow> 
+   (\<exists>q'. \<rho> \<turnstile> (q, s) -p\<rightarrow> (q', t) \<and> \<rho> \<Turnstile> q' \<approx> p'))"
+  apply(rule conjI)
+   apply(drule_tac subsetD, assumption)
+   apply(clarsimp simp: Transf_def prog_mucorr_def)
+   apply(drule_tac c="((p, s), (q', t))" in subsetD)
+    apply(clarsimp simp: prod_rel_def pstepR_def)
+    apply(fastforce simp: relcompI)
+   apply(clarsimp simp: prod_rel_def pstepR_def)
+   apply fast
+  apply(drule_tac c="(q,p)" in subsetD)
+   apply(clarsimp simp: prog_mucorr_def)
+  apply(clarsimp simp: Transf_def prog_mucorr_def)
+  apply(drule_tac c="((q, s), (p', t))" in subsetD)
+   apply(clarsimp simp: prod_rel_def pstepR_def)
+   apply(fastforce simp: relcompI)
+  apply(clarsimp simp: prod_rel_def pstepR_def)
+  apply fast
+  done
 
 
 section "Further properties"

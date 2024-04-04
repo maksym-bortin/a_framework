@@ -68,6 +68,44 @@ lemma drop_conds :
   done
 
 
+lemma drop_conds' :
+"sq \<in> COMP \<rho> \<Longrightarrow>
+ drop i sq \<in> TermCond \<rho> Q \<Longrightarrow>
+ drop i sq \<in> ProgCond \<rho> G \<Longrightarrow> 
+ refl G \<Longrightarrow>
+ 0 < i \<Longrightarrow>
+ \<forall>k\<le>i. 0 < k \<longrightarrow> \<not>tkOf(sq!k) \<Longrightarrow>
+ \<forall>k<i. progOf(sq!k) \<noteq> Skip \<Longrightarrow>
+ sq \<in> TermCond \<rho> Q \<and> sq \<in> ProgCond \<rho> G"
+  apply(rule conjI)
+   apply(subst TermCond_def, simp)
+   apply(rule conjI, simp add: pcs_def)
+    apply(subst hd_conv_nth, erule COMP_noNil)
+    apply(case_tac "sq!0", fast)
+   apply clarify
+   apply(case_tac "j < i")
+    apply(frule_tac x=j in spec, drule mp, simp, erule notE, assumption)
+   apply(drule leI)
+   apply(drule TermCond_D)
+      apply(drule_tac x="j-i" in spec, drule mp, simp, drule mp, simp)
+   apply clarsimp
+   apply(rename_tac l t' tk'')
+   apply(rule_tac x="i + l" in exI, simp)
+  apply(subst ProgCond_def, simp)
+  apply(rule conjI, simp add: pcs_def)
+   apply(subst hd_conv_nth, erule COMP_noNil)
+   apply(case_tac "sq!0", fast)
+  apply(clarsimp simp: cstep_cond_def)
+  apply(rename_tac k p1 s1 tk1 p2 s2 tk2)
+  apply(case_tac "k \<le> i")
+   apply(frule_tac x=k in spec, drule mp, simp, drule mp, assumption)
+   apply simp
+  apply(erule_tac i="k - i" in ProgCond_D, simp, simp)
+   apply simp
+   apply(erule sym)
+  apply simp
+  done
+
 
 section "Seq splits"
 
