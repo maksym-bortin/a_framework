@@ -549,15 +549,12 @@ lemma mutex_auxG :
          (\<ordmasculine>turn_aux1 \<longrightarrow> \<ordfeminine>flag1 \<longrightarrow> \<ordmasculine>flag1) \<rbrace>"
   unfolding mutex_auxG_def 
   apply rg_tac
-   apply(rule ConseqRG, rule thread1_auxG, simp, simp, clarsimp, clarsimp)
-   apply clarsimp
+   apply(rule ConseqRG, rule thread1_auxG, simp+)
    apply(rule conjI, clarsimp)
-    apply(case_tac j, simp)
-    apply simp
-   apply clarsimp
-   apply(rule ConseqRG, rule thread0_auxG, simp, simp, clarsimp, clarsimp)
-  apply clarsimp
+    apply(case_tac j, clarsimp+)
+   apply(rule ConseqRG, rule thread0_auxG, simp+)
   apply(rule conjI, clarsimp+)
   done
+
 
 end

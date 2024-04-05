@@ -3,20 +3,20 @@ for modelling, verification and transformation of concurrent
 imperative programs in the Isabelle/HOL theorem prover, versions 2022 and 2023
 (see www.cl.cam.ac.uk/research/hvg/Isabelle and LICENSE for more details). 
 
-It includes the following theories:
+The package comprises the following theory files:
 
- - Prelims.thy       -- auxiliaries
- - LA.thy            -- abstract and concrete syntax of the framework's language
- - SmallSteps.thy    -- the computational model
- - Computations.thy  -- potential computations and conditions on these
- - RG.thy            -- the setup of a Hoare-style rely/guarantee (R/G) program logic
- - ProgCorr.thy      -- program correspondences
- - AnnChange.thy     -- annotations do not affect program behaviours 
- - Rules_prelims.thy -- auxiliaries for Rules.thy
- - Rules.thy         -- rules of the R/G program logic
- - AssocR_tactic.thy -- normalisation of sequential compositions to the right (with small examples)
- - RG_tactics.thy    -- a simple VCG using the rules
- - Parallel_inc.thy  -- the 'parallel increment' example
- - Mutex.thy         -- verification of a model of the Peterson's mutual exclusion algorithm
+ - Prelims.thy          -- auxiliaries
+ - LA.thy               -- abstract and concrete syntax of the framework's language
+ - SmallSteps.thy       -- the computational model
+ - Computations.thy     -- potential computations and conditions on these
+ - RG.thy               -- the setup of a Hoare-style rely/guarantee (R/G) program logic
+ - ProgCorr.thy         -- program correspondences
+ - AnnChange.thy        -- annotations do not affect program behaviours 
+ - Rules_prelims.thy    -- auxiliaries for Rules.thy
+ - Rules.thy            -- rules of the R/G program logic
+ - AssocR_tactic.thy    -- normalisation of sequential compositions to the right (with small examples)
+ - RG_tactics.thy       -- a simple VCG using the rules
+ - Parallel_inc.thy     -- the 'parallel increment' example
+ - Mutex.thy            -- verification of a model of the Peterson's mutual exclusion algorithm
  
 Note: processing Rules.thy may take a few moments.
