@@ -13,7 +13,7 @@
    ******************************************************************* *)
 
 theory RG_tactics
-  imports Rules
+  imports Rules AssocR_tactic
 begin
 
 definition RG_deriv_VCG :: "(nat \<Rightarrow> 's LA) \<Rightarrow> bool \<Rightarrow> 's staterel \<Rightarrow> 's set \<Rightarrow> 's LA \<Rightarrow>
