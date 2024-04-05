@@ -14,7 +14,7 @@ It includes the following theories:
  - AnnChange.thy     -- annotations do not affect program behaviours 
  - Rules_prelims.thy -- auxiliaries for Rules.thy
  - Rules.thy         -- rules of the R/G program logic
- - AssocR_tactic     -- normalisation of sequential compositions to the right (with small examples)
+ - AssocR_tactic.thy -- normalisation of sequential compositions to the right (with small examples)
  - RG_tactics.thy    -- a simple VCG using the rules
  - Parallel_inc.thy  -- the 'parallel increment' example
  - Mutex.thy         -- verification of a model of the Peterson's mutual exclusion algorithm
