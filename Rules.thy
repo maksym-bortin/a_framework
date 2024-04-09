@@ -1300,26 +1300,4 @@ lemma SeqRule :
   done
 
 
-
-
-
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
