@@ -159,6 +159,28 @@ lemma Seq_split[rule_format] :
   done
 
 
+lemma Seq_split_ext[rule_format] :
+"sq \<in> \<lbrakk>Seq p1 p2\<rbrakk>\<^sub>\<rho> \<Longrightarrow> sq \<in> EnvCond \<rho> R \<Longrightarrow> sq \<in> InitCond \<rho> P \<Longrightarrow>
+ \<forall>i<length sq. 0 < i \<longrightarrow> tkOf(sq!i) \<longrightarrow> progOf(sq!(i-1)) \<noteq> Seq Skip p2 \<Longrightarrow>
+ \<exists>sq1. length sq1 = length sq \<and> 
+   sq1 \<in> \<lbrakk>p1\<rbrakk>\<^sub>\<rho> \<and> sq1 \<in> EnvCond \<rho> R \<and> sq1 \<in> InitCond \<rho> P \<and>
+   (\<forall>i<length sq. sq!i = ((Seq (progOf(sq1!i)) p2, stateOf(sq1!i)), tkOf(sq1!i)))"
+  apply(frule Seq_split, clarsimp+)
+  apply(rule_tac x=sq1 in exI, simp)
+  apply(rule conjI)
+   apply(subst EnvCond_def, simp)
+   apply(rule conjI, erule exI)
+   apply(clarsimp simp: cstep_cond_def)
+   apply(drule_tac x=i in spec, drule mp, assumption)
+   apply(frule_tac x=i in spec, drule mp, assumption)
+   apply(drule_tac x="i-1" in spec, drule mp, simp)
+   apply(drule_tac t="sq1!(i - Suc 0)" in sym, clarsimp)
+   apply(erule_tac i=i in EnvCond_D, simp+)
+  apply(clarsimp simp: InitCond_def)
+  apply(frule pcs_noNil)
+  by (metis fst_conv hd_conv_nth length_0_conv not_gr_zero snd_conv surjective_pairing)
+
+
 
 lemma Seq_split2[rule_format] :
 "sq \<in> \<lbrakk>Seq Skip p2\<rbrakk>\<^sub>\<rho> \<Longrightarrow> 
@@ -204,6 +226,25 @@ lemma Seq_split2[rule_format] :
   apply(drule stepR_D2, clarsimp)
   done
 
+
+lemma Seq_split2_ext[rule_format] :
+"sq \<in> \<lbrakk>Seq Skip p2\<rbrakk>\<^sub>\<rho> \<Longrightarrow> sq \<in> EnvCond \<rho> R \<Longrightarrow> 
+ \<forall>i<length sq. 0 < i \<longrightarrow> \<not>tkOf(sq!i) \<Longrightarrow>
+ \<exists>sq2. length sq = length sq2 \<and> 
+   sq2 \<in> \<lbrakk>p2\<rbrakk>\<^sub>\<rho> \<and> sq2 \<in> EnvCond \<rho> R \<and>
+   (\<forall>i<length sq2. progOf(sq!i) = Skip;p2 \<and> sq2!i = ((p2, stateOf(sq!i)), tkOf(sq!i)))"
+  apply(frule Seq_split2, clarsimp+)
+  apply(rule_tac x=sq2 in exI, simp)
+  apply(subst EnvCond_def, simp)
+  apply(rule conjI, erule exI)
+  apply(clarsimp simp: cstep_cond_def)
+  apply(drule_tac x=i in spec, drule mp, assumption)
+  apply(frule_tac x=i in spec, drule mp, assumption)
+  apply(drule_tac x="i-1" in spec, drule mp, simp)
+  apply(case_tac "sq!(i-1)")
+  apply(case_tac "sq!i", clarsimp)
+  apply(erule_tac i=i in EnvCond_D, simp+)
+  done
 
 
 section "Splitting parallel computations"
