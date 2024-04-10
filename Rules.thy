@@ -1181,15 +1181,12 @@ lemma SeqRule :
           apply(rename_tac l s t' p' tk')
           apply(erule subsetD)
           apply(rule_tac a=s in ImageI)
-           apply(erule_tac i=l and sq="sq2@tl(drop i1 sq)" in EnvCond_D, simp, assumption)
-            apply(subgoal_tac "(sq2 @ tl (drop i1 sq))!(l - Suc 0) = sq2!(l - Suc 0)")
-             apply simp
-            apply (meson less_imp_diff_less nth_append)
-           apply(subgoal_tac "(sq2 @ tl (drop i1 sq))!l = sq2!l")
-            apply simp
-           apply (meson nth_append)
-          apply fastforce
-         apply (metis fst_conv zero_less_diff)
+           apply(erule_tac i=l and sq="sq2@tl(drop i1 sq)" and 
+                 c=SKIP and tk=tk' and c'=p' and t=t' in EnvCond_D, simp, assumption)
+            apply (metis One_nat_def less_imp_diff_less nth_append)
+           apply (metis nth_append)
+          apply (meson nth_append)
+         apply fastforce
         apply (metis Nat.add_0_right fst_conv length_greater_0_conv lessI snd_eqD)
        apply blast
       apply linarith
