@@ -309,8 +309,7 @@ fun rg_post_tac ctxt =
 
 ML \<open>
 
-fun mk_rg_ctxt ctxt = (ctxt delsimps [@{thm "Set.Int_subset_iff"},
-                                      @{thm "Lattices.semilattice_inf_class.inf.bounded_iff"}])
+fun mk_rg_ctxt ctxt = (ctxt delsimps [@{thm "Lattices.semilattice_inf_class.inf.bounded_iff"}])
 
 fun rg_tac props ctxt =
  let val ctxt' = mk_rg_ctxt ctxt in

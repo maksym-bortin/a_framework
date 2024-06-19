@@ -1,6 +1,6 @@
 This package contains a formalisation of a framework 
 for modelling, verification and transformation of concurrent 
-imperative programs in the Isabelle/HOL theorem prover, versions 2022 and 2023
+imperative programs in the Isabelle/HOL theorem prover, version 2024
 (see www.cl.cam.ac.uk/research/hvg/Isabelle and LICENSE for more details). 
 
 The package comprises the following theory files:
