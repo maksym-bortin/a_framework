@@ -3,6 +3,8 @@ for modelling, verification and transformation of concurrent
 imperative programs in the Isabelle/HOL theorem prover, version 2024
 (see www.cl.cam.ac.uk/research/hvg/Isabelle and LICENSE for more details). 
 
+The theoretical foundation is comprehensively presented in the report [arxiv.org/abs/2007.02261].
+
 The package comprises the following theory files:
 
  - Prelims.thy          -- auxiliaries
