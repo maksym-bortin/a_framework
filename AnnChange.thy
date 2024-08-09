@@ -20,6 +20,8 @@ begin
 inductive_set Eq_upto_ann :: "('s LA \<times> 's LA) set"
 where "(Skip, Skip) \<in> Eq_upto_ann" |
       "(Basic f, Basic f) \<in> Eq_upto_ann" |
+      "(p, p') \<in> Eq_upto_ann \<Longrightarrow> (CJUMP C TO i OTHERWISE p END, 
+                                  CJUMP C TO i OTHERWISE p' END) \<in> Eq_upto_ann" |
       "(p, p') \<in> Eq_upto_ann \<Longrightarrow> (q, q') \<in> Eq_upto_ann \<Longrightarrow>
        (IF C THEN p ELSE q FI, 
         IF C THEN p' ELSE q' FI) \<in> Eq_upto_ann" |
@@ -92,6 +94,23 @@ lemma Eq_upto_ann_await_aux :
   done
 
 
+lemma Eq_upto_ann_refl : "(p, p) \<in> Eq_upto_ann"
+  apply(induct p, (rule Eq_upto_ann.intros)+)
+        apply simp+
+      apply(rule Eq_upto_ann.intros)+
+       apply simp+
+     apply(rule Eq_upto_ann.intros)+
+      apply simp+
+    apply(rule Eq_upto_ann_ParallelsI)
+     apply (meson fsts.intros in_set_conv_nth)
+    apply simp
+   apply(rule Eq_upto_ann.intros)+
+   apply simp+
+  apply(rule Eq_upto_ann.intros)+
+  apply simp+
+  done
+
+
 lemma Eq_upto_ann_sym :
 "(p, q) \<in> Eq_upto_ann \<Longrightarrow> (q, p) \<in> Eq_upto_ann"
   apply(induct rule: Eq_upto_ann.induct)
@@ -102,8 +121,25 @@ lemma Eq_upto_ann_sym :
    apply assumption+
   done
 
+lemma Eq_upto_ann_trans :
+"(p, q) \<in> Eq_upto_ann \<Longrightarrow> (q, r) \<in> Eq_upto_ann \<Longrightarrow> (p, r) \<in> Eq_upto_ann"
+  apply(induct arbitrary: r rule: Eq_upto_ann.induct, simp_all)
+       apply(erule_tac ?a2.0=r in Eq_upto_ann.cases, simp_all)
+       apply(rule Eq_upto_ann.intros, fast)
+      apply(erule_tac ?a2.0=r in Eq_upto_ann.cases, simp_all)
+      apply(rule Eq_upto_ann.intros, fast+)
+     apply(erule_tac ?a2.0=r in Eq_upto_ann.cases, simp_all)
+     apply(rule Eq_upto_ann.intros, fast+)
+    apply(erule_tac ?a2.0=r in Eq_upto_ann.cases, simp_all)
+    apply(rule Eq_upto_ann.intros, fast+)
+   apply(erule_tac ?a2.0=r in Eq_upto_ann.cases, simp_all)
+   apply(rule Eq_upto_ann.intros, fast+)
+  apply(erule_tac ?a2.0=r in Eq_upto_ann.cases, simp_all)
+  apply(rule Eq_upto_ann.intros, fast+)
+  done
 
-lemma upto_ann_corr_aux[rule_format] :
+
+lemma Eq_upto_ann_corr_aux[rule_format] :
 "\<rho> \<turnstile> cf -p\<rightarrow> cf' \<Longrightarrow>
  (\<forall>q. (fst cf, q) \<in> Eq_upto_ann \<longrightarrow>
  (\<exists>q'. \<rho> \<turnstile> (q, snd cf) -p\<rightarrow> (q', snd cf') \<and> (fst cf', q') \<in> Eq_upto_ann))"
@@ -114,8 +150,12 @@ lemma upto_ann_corr_aux[rule_format] :
              apply(rule Eq_upto_ann.intros)
             apply clarsimp
             apply(erule Eq_upto_ann.cases, simp_all)
+            apply(rule_tac x="\<rho> j" in exI, simp add: Eq_upto_ann_refl)
+            apply(erule pstep.CJumpT)
            apply clarsimp
            apply(erule Eq_upto_ann.cases, simp_all)
+           apply(rule_tac x=p' in exI, simp)
+           apply(erule pstep.CJumpF)
           apply clarsimp
           apply(erule Eq_upto_ann.cases, simp_all)
           apply clarify
@@ -212,14 +252,15 @@ lemma upto_ann_corr_aux[rule_format] :
 
 
 
-lemma upto_ann_corr :
+
+lemma Eq_upto_ann_corr :
 "(p, q) \<in> Eq_upto_ann \<Longrightarrow>
  \<rho> \<Turnstile> p \<sqsupseteq> q"
   apply(simp add: prog_corr_def)
   apply(rule_tac x="Eq_upto_ann" in exI, simp)
-  apply(simp add: prog_corrC_def)
+  apply(simp add: prog_sim_def)
   apply(rule conjI, clarsimp)
-   apply(drule upto_ann_corr_aux)
+   apply(drule Eq_upto_ann_corr_aux)
     apply simp
     apply(erule Eq_upto_ann_sym)
    apply clarsimp
@@ -233,18 +274,18 @@ lemma upto_ann_corr :
   done
 
 
-lemma upto_ann_eqv :
+lemma Eq_upto_ann_eqv :
 "(p, q) \<in> Eq_upto_ann \<Longrightarrow>
  \<rho> \<Turnstile> p \<approx> q"
   apply(simp add: prog_mucorr_def)
   apply(rule conjI)
-   apply(erule upto_ann_corr)
-  apply(rule upto_ann_corr)   
+   apply(erule Eq_upto_ann_corr)
+  apply(rule Eq_upto_ann_corr)   
   apply(erule Eq_upto_ann_sym)
   done
 
 
-lemmas Eq_upto_ann1 = upto_ann_eqv[THEN prog_corr_RG_eq]
+lemmas Eq_upto_ann1 = Eq_upto_ann_eqv[THEN prog_corr_RG_eq]
 
 
 end

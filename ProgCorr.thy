@@ -608,7 +608,7 @@ lemma prog_corr_whiles :
 
 subsection "Program correspondence and the parallel operator"
 
-text "subsuming commutativity property"
+
 theorem prog_corr_parallels : 
 "\<forall>i<length ps. \<rho>,\<rho>' \<Turnstile> fst(ps!\<sigma> i) \<sqsupseteq>\<^bsub>r\<^esub> fst(ps'!i) \<Longrightarrow> length ps = length ps' \<Longrightarrow>
  inj_on \<sigma> {0..<length ps'} \<Longrightarrow> \<forall>i<length ps'. \<sigma> i < length ps \<Longrightarrow>
@@ -652,8 +652,33 @@ theorem prog_corr_parallels :
   by assumption
 
 
+theorem Parallel_commute :
+"\<forall>i<length ps. fst(ps!\<sigma> i) = fst(ps'!i) \<Longrightarrow> length ps = length ps' \<Longrightarrow>
+ inj_on \<sigma> {0..<length ps'} \<Longrightarrow> \<forall>i<length ps'. \<sigma> i < length ps \<Longrightarrow>
+ \<rho> \<Turnstile> Parallel ps \<approx> Parallel ps'"  
+  apply(simp add: prog_mucorr_def)
+  apply(rule conjI)
+   apply(rule_tac \<sigma>=\<sigma> in prog_corr_parallels)
+      apply (simp add: prog_corr_refl)
+     apply clarsimp+
+  apply(subgoal_tac "\<forall>j<length ps. \<exists>i<length ps. \<sigma> i = j")
+   apply(drule choice'')
+   apply clarify
+  apply(rename_tac \<sigma>')
+  apply(rule_tac \<sigma>="\<sigma>'" in prog_corr_parallels)
+      apply clarify
+      apply(drule_tac x="\<sigma>' i" in spec)
+      apply(drule mp, fastforce)
+      apply(clarsimp simp: prog_corr_refl)+
+    apply(rule inj_onI, rename_tac i j)
+    apply(drule_tac f=\<sigma> and x="\<sigma>' i" in arg_cong)
+    apply fastforce
+   apply presburger
+  using inj_on_surj_set_intv by presburger
+
+
 lemma prog_corr_parallels' :
-"(\<And>i. i < length ps \<Longrightarrow> \<rho>, \<rho>' \<Turnstile> fst (ps ! i) \<sqsupseteq>\<^bsub>r\<^esub> fst (ps' ! i)) \<Longrightarrow>
+"(\<And>i. i < length ps \<Longrightarrow> \<rho>, \<rho>' \<Turnstile> fst (ps!i) \<sqsupseteq>\<^bsub>r\<^esub> fst (ps'!i)) \<Longrightarrow>
  length ps = length ps' \<Longrightarrow>
   \<rho>, \<rho>' \<Turnstile> Parallel ps \<sqsupseteq>\<^bsub>r\<^esub> Parallel ps'"
   apply(rule prog_corr_parallels[where \<sigma>=id, simplified, rule_format])
