@@ -97,7 +97,6 @@ abbreviation HoareTripleRGjf_i :: "'s staterel \<Rightarrow> 's set \<Rightarrow
 where "\<Turnstile>i {R, P} p {Q, G} \<equiv> (\<lambda>x. Skip) \<Turnstile>i {R, P} p {Q, G}"
 
 
-
 theorem HoareTripleRG_i :
 "\<rho> \<Turnstile> {R, P} p {Q, G} \<Longrightarrow>
  \<rho> \<Turnstile>i {R, P} p {Q, G}" 
@@ -109,7 +108,7 @@ theorem HoareTripleRG_i :
   apply simp
   apply(case_tac "isq 0", clarsimp)
   apply(rename_tac s0 tk0)
-  apply(subgoal_tac "\<forall>j. fprefix isq j \<in> TermCond \<rho> Q \<inter> ProgCond \<rho> G")
+  apply(subgoal_tac "\<forall>j. fprefix isq (j+1) \<in> TermCond \<rho> Q \<inter> ProgCond \<rho> G")
    apply(rule conjI)
     apply(clarsimp simp: TermCond_i_def)
     apply(drule_tac x=j in spec, clarify)
@@ -126,9 +125,9 @@ theorem HoareTripleRG_i :
     apply(erule sym)
    apply(simp add: fprefix_nth)
   apply(rule allI)
-  apply(frule_tac n=j in fprefix_COMP)
+  apply(frule_tac n="j+1" in fprefix_COMP, simp)
   apply(subst (asm) HoareTripleRG_def)
-  apply(drule_tac c="fprefix isq j" in subsetD)
+  apply(drule_tac c="fprefix isq (j+1)" in subsetD)
    apply simp
    apply(rule conjI)
     apply(simp add: EnvCond_def)
@@ -150,6 +149,7 @@ theorem HoareTripleRG_i :
    apply(subst hd_conv_nth, erule COMP_noNil)
    apply(simp add: fprefix_nth)
   by assumption
+
 
 
 

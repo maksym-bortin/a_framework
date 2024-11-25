@@ -136,25 +136,24 @@ lemma iCOMP_esteps :
   by(drule_tac i=i and j=j in iCOMP_estepsG, simp, assumption)
 
 
-
-
-fun fprefix :: "(nat \<Rightarrow> 'a) \<Rightarrow> nat \<Rightarrow> 'a list"
-where "fprefix sq 0 = [sq 0]" |
-      "fprefix sq (Suc n) = fprefix sq n @ [sq (Suc n)]"
+text "Finite prefixes"
+definition fprefix :: "(nat \<Rightarrow> 'a) \<Rightarrow> nat \<Rightarrow> 'a list"
+  where "fprefix sq n = map sq [0..<n]"
 
 
 lemma fprefix_length :
-"length(fprefix sq n) = n + 1"
-  by(induct n, simp_all)
+"length(fprefix sq n) = n"
+  by(simp add: fprefix_def)
 
 lemma fprefix_nth :
-"i \<le> n \<Longrightarrow> (fprefix sq n)!i = sq i"
-  apply(induct n, simp_all)
-  apply(case_tac "i = Suc n", simp)
-   apply(subst nth_append, simp add: fprefix_length)
-  apply simp
-  apply(subst nth_append, simp add: fprefix_length)
- done
+"i < n \<Longrightarrow> (fprefix sq n)!i = sq i"
+  by(simp add: fprefix_def)
+
+lemma fprefix_take :
+"m \<le> n \<Longrightarrow> fprefix sq m = take m (fprefix sq n)"
+  apply(simp add: fprefix_def)
+  apply(induct n, simp)
+  by(case_tac "m = n + 1", simp+)
 
 
 
@@ -241,7 +240,7 @@ lemma COMP_eq :
 
 
 lemma COMP_fprefix :
-"COMP \<rho> = {fprefix sq n |sq n. sq \<in> iCOMP \<rho>}"
+"COMP \<rho> = {fprefix sq (n+1) |sq n. sq \<in> iCOMP \<rho>}"
   apply(rule set_eqI)
   apply(rename_tac sq)
   apply(subst COMP_eq)
@@ -259,15 +258,24 @@ lemma COMP_fprefix :
      apply(subst stepR_def, clarsimp, rule_tac x=False in exI, simp)
     apply fastforce
    apply(subst stepR_def, clarsimp, rule_tac x=False in exI, clarsimp+)
-  apply(rule conjI, clarsimp, drule_tac f=length in arg_cong, 
-        (clarsimp simp: fprefix_length fprefix_nth iCOMP_def)+)
-  done
+  apply(clarsimp simp: fprefix_length fprefix_nth)
+  by (metis Suc_eq_plus1 fprefix_length iCOMP_D length_0_conv nat.simps(3))
 
-  
+
+corollary fprefix_COMP' :
+"sq \<in> iCOMP \<rho> \<Longrightarrow> fprefix sq (n+1) \<in> COMP \<rho>"
+  by(subst COMP_fprefix, fast)
 
 corollary fprefix_COMP :
-"sq \<in> iCOMP \<rho> \<Longrightarrow> fprefix sq n \<in> COMP \<rho>"
-  by(subst COMP_fprefix, fast)
+"sq \<in> iCOMP \<rho> \<Longrightarrow> n > 0 \<Longrightarrow> fprefix sq n \<in> COMP \<rho>"
+  by (metis Suc_eq_plus1 Suc_pred' fprefix_COMP')
+
+corollary fprefix_COMP_D :
+"fprefix sq n \<in> COMP \<rho> \<Longrightarrow> n > 0"
+  apply(subst (asm) COMP_fprefix, clarsimp)
+  apply(drule_tac f=length in arg_cong)
+  by(simp add: fprefix_length)
+
 
 
 text "Finite potential computations of a program"
@@ -323,8 +331,7 @@ lemma COMP_compose' :
   apply(drule_tac x="i - length sq + 1" in spec)+
   apply(drule mp, fastforce)
   apply clarsimp
-  apply(subgoal_tac "i - length sq + 1 = i + 1 - length sq", simp)
-  by simp
+  by (metis Suc_diff_le less_eq_Suc_le not_less_eq_eq)
 
 
 lemma COMP_compose2' :
