@@ -1,5 +1,5 @@
 This package contains a formalisation of a framework for modelling, verification and transformation
-of concurrent imperative programs in the Isabelle/HOL theorem prover, version 2024
+of concurrent imperative programs in the Isabelle/HOL theorem prover, version 2025
 (see www.cl.cam.ac.uk/research/hvg/Isabelle and LICENSE for more details). 
 
 The theoretical foundation is comprehensively presented in the report [https://arxiv.org/abs/2007.02261].
@@ -10,6 +10,8 @@ The package comprises the following theory files:
  - LA.thy               -- abstract and concrete syntax of the framework's language
  - SmallSteps.thy       -- the computational model
  - Computations.thy     -- potential computations and conditions on these
+ - Positions.thy        -- program positions in general and in particular those 
+                           that are 'fired' by program steps
  - RG.thy               -- the setup of a Hoare-style rely/guarantee (R/G) program logic
  - ProgCorr.thy         -- program correspondences
  - AnnChange.thy        -- annotations do not affect program behaviours 
