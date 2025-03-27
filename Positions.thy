@@ -208,9 +208,10 @@ lemma rpos_lookup_rpos :
 
 lemma lookup_pos_Skip :
 "length xs \<noteq> 1 \<Longrightarrow> Skip|\<^bsub>xs\<^esub> = None"
-  apply(induct xs, simp+)
-  apply(case_tac xs, simp+)
-  done
+  apply(case_tac xs, clarsimp+)
+  apply(rename_tac x xs', case_tac xs')
+  by clarsimp+
+
 
 
 lemma eq_lookup_rpos_retain :
@@ -285,8 +286,7 @@ lemma lookup_jumpfree :
 lemma locally_seq_rpos_unq :
 "locally_seq p \<Longrightarrow> xs\<in>set(rpos p) \<Longrightarrow> xs'\<in>set(rpos p) \<Longrightarrow>
  xs = xs'"
-  apply(induct p arbitrary:xs xs' rule: rpos.induct)
-          apply simp_all
+  apply(induct p arbitrary:xs xs' rule: rpos.induct, simp_all)
   by(clarsimp split: if_splits)
 
 
