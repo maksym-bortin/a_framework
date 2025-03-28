@@ -12,6 +12,7 @@ The package comprises the following theory files:
  - Computations.thy     -- potential computations and conditions on these
  - Positions.thy        -- program positions in general and in particular those 
                            that are 'fired' by program steps
+ - Fairness.thy         -- defining fair potential computations
  - RG.thy               -- the setup of a Hoare-style rely/guarantee (R/G) program logic
  - ProgCorr.thy         -- program correspondences
  - AnnChange.thy        -- annotations do not affect program behaviours 

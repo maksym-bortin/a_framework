@@ -642,15 +642,16 @@ lemma pstep_rpos_retain' :
   by clarify
 
 
+
 lemma iCOMP_rpos_retain :
-"sq \<in> iCOMP \<rho> \<Longrightarrow> fair_ret \<rho> \<Longrightarrow> xs\<in>set(rpos (progOf(sq i))) \<Longrightarrow> i < j \<Longrightarrow>
- \<forall>k>i. k \<le> j \<longrightarrow> (\<forall>p1 s1 tk1 p2 s2 p. sq(k-1) = ((p1, s1), tk1) \<longrightarrow> sq k = ((p2, s2), True) \<longrightarrow>
-   (progOf(sq i))|\<^bsub>xs\<^esub> = p1|\<^bsub>xs\<^esub> \<longrightarrow> fpos_of \<rho> (p1, s1) (p2, s2) \<noteq> xs) \<Longrightarrow>
- xs\<in>set(rpos (progOf(sq j))) \<and> (progOf(sq i))|\<^bsub>xs\<^esub> = (progOf(sq j))|\<^bsub>xs\<^esub>"
-  apply(induct j, simp)
+"sq \<in> iCOMP \<rho> \<Longrightarrow> fair_ret \<rho> \<Longrightarrow> xs\<in>set(rpos(progOf(sq i))) \<Longrightarrow> i < j \<Longrightarrow>
+ \<forall>k\<ge>i. k < j \<longrightarrow> tkOf(sq(k+1)) \<longrightarrow> (progOf(sq k))|\<^bsub>xs\<^esub> = (progOf(sq i))|\<^bsub>xs\<^esub> \<longrightarrow> 
+        fpos_of \<rho> (confOf(sq k)) (confOf(sq(k+1))) \<noteq> xs \<Longrightarrow>
+ xs\<in>set(rpos(progOf(sq j))) \<and> (progOf(sq i))|\<^bsub>xs\<^esub> = (progOf(sq j))|\<^bsub>xs\<^esub>"
+    apply(induct j, simp)
   apply clarsimp
   apply(subgoal_tac "xs \<in> set(rpos (progOf (sq j))) \<and> (progOf(sq i))|\<^bsub>xs\<^esub> = (progOf(sq j))|\<^bsub>xs\<^esub>")
-   apply(drule_tac x="j+1" in spec, simp)
+   apply(drule_tac x=j in spec, simp)
    apply(drule_tac i=j in iCOMP_D)
    apply(clarsimp simp: stepR_def split: if_splits)
    apply(erule disjE, clarsimp)

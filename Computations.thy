@@ -62,23 +62,42 @@ lemma iCOMP_D :
 
 lemma iCOMP_jumpfree :
 "sq \<in> iCOMP \<rho> \<Longrightarrow> jumpfree(progOf(sq j)) \<Longrightarrow>
- \<forall>i>j. jumpfree(progOf(sq i))"
+ \<forall>i\<ge>j. jumpfree(progOf(sq i))"
   apply(rule allI)
-  apply(induct_tac i, simp)
-  apply clarify
-  apply(subgoal_tac "jumpfree (progOf(sq n))")
-   apply(clarsimp simp: iCOMP_def)
-   apply(drule_tac x=n in spec)
-   apply(case_tac "sq n")
-   apply(case_tac "sq(n+1)", clarsimp)
-   apply(rename_tac tk)
-   apply(case_tac tk, simp)
-    apply(drule stepR_D1)
-    apply(erule jumpfree_pstep, assumption)
-   apply simp
-   apply(drule stepR_D2, simp)
-  apply(case_tac "j=n", simp_all)
+  apply(induct_tac i, clarsimp+)
+  apply(case_tac "j = n+1", simp+)
+  apply(clarsimp simp: iCOMP_def)
+  apply(drule_tac x=n in spec)
+  apply(case_tac "sq n")
+  apply(case_tac "sq(n+1)", clarsimp)
+  apply(rename_tac tk)
+  apply(case_tac tk, simp)
+   apply(drule stepR_D1)
+   apply(erule jumpfree_pstep, assumption)
+  apply simp
+  apply(drule stepR_D2, simp)
   done
+
+
+lemma iCOMP_jumpfree_locally_seq :
+"sq \<in> iCOMP \<rho> \<Longrightarrow> jumpfree(progOf(sq j)) \<Longrightarrow> locally_seq(progOf(sq j)) \<Longrightarrow>
+ \<forall>i\<ge>j. locally_seq(progOf(sq i))"
+  apply(rule allI)
+  apply(induct_tac i, clarsimp+)
+  apply(frule iCOMP_jumpfree, assumption)
+  apply(case_tac "j = n+1", simp+)
+  apply(clarsimp simp: iCOMP_def)
+  apply(drule_tac x=n in spec)
+  apply(case_tac "sq n")
+  apply(case_tac "sq(n+1)", clarsimp)
+  apply(rename_tac tk)
+  apply(case_tac tk, simp)
+   apply(drule stepR_D1)
+   apply(erule jumpfree_locally_seq_pstep)
+    apply(drule_tac x=n in spec, simp+)
+  apply(drule stepR_D2, simp)
+  done
+
 
 
 lemma iCOMP_Skip :
