@@ -570,7 +570,7 @@ lemma fpos_of_eq :
 
 lemma fpos_of_Parallel_step :
 "\<rho> \<turnstile> (Parallel ps, s) -p\<rightarrow> (p, t) \<Longrightarrow> fair_ret \<rho> \<Longrightarrow>
- (\<forall>i<length ps. fst(ps!i) = SKIP \<and> fpos_of \<rho> (Parallel ps, s) (p, t) = [0] \<and> p = Skip \<and> s = t) \<or>
+ ((\<forall>i<length ps. fst(ps!i) = SKIP) \<and> fpos_of \<rho> (Parallel ps, s) (p, t) = [0] \<and> p = Skip \<and> s = t) \<or>
  (\<exists>i<length ps. \<exists>p'. fpos_of \<rho> (Parallel ps, s) (p, t) = (i+1)#fpos_of \<rho> (fst(ps!i), s) (p', t) \<and>
                      p = Parallel (ps[i := (p', snd(ps!i))]) \<and>
                      \<rho> \<turnstile> (fst(ps!i), s) -p\<rightarrow> (p', t))"
