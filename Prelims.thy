@@ -137,6 +137,14 @@ lemma map_zip_aux2 :
  done
 
 
+lemma rtranclp_sub :
+"r\<^sup>*\<^sup>* u v \<Longrightarrow> \<forall>u v. r u v \<longrightarrow> s u v \<Longrightarrow> s\<^sup>*\<^sup>* u v"
+  by(erule rtranclp.induct, fastforce+)
+
+lemma rtranclp_sub2 :
+"r\<^sup>*\<^sup>* u v \<Longrightarrow> \<forall>u v. r u v \<longrightarrow> s\<^sup>*\<^sup>* u v \<Longrightarrow> s\<^sup>*\<^sup>* u v"
+  by(erule rtranclp.induct, fastforce+)
+
 
 
 end
