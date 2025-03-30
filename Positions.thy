@@ -642,6 +642,10 @@ lemma pstep_rpos_retain' :
   by clarify
 
 
+text "The following lemma essentially shows that
+   if the program part of the i-th configuration on sq (i.e. of sq i) has a reducible position xs
+   and no program step from sq k to sq(k+1) (with i <= k < j) 'fires' xs then 
+   the program part of sq j also has xs as a position pointing to the same subterm as in sq i."
 
 lemma iCOMP_rpos_retain :
 "sq \<in> iCOMP \<rho> \<Longrightarrow> fair_ret \<rho> \<Longrightarrow> xs\<in>set(rpos(progOf(sq i))) \<Longrightarrow> i < j \<Longrightarrow>
