@@ -568,6 +568,13 @@ lemma fpos_of_eq :
   done
 
 
+corollary fpos_univ_prop :
+"\<rho> \<turnstile> (p, s) -p\<rightarrow> (p', t) \<Longrightarrow> fair_ret \<rho> \<Longrightarrow>
+ (fpos_of \<rho> (p, s) (p', t) = xs) = 
+ (xs \<in> set(rpos p) \<and> (\<exists>p1. \<rho> \<turnstile> (the(p|\<^bsub>xs\<^esub>), s) -p\<rightarrow> (p1, t) \<and> p' = p\<lbrakk>p1\<rbrakk>\<^bsub>xs\<^esub>))"
+  by (meson fpos_of_eq fpos_of_in)
+
+
 lemma fpos_of_Parallel_step :
 "\<rho> \<turnstile> (Parallel ps, s) -p\<rightarrow> (p, t) \<Longrightarrow> fair_ret \<rho> \<Longrightarrow>
  ((\<forall>i<length ps. fst(ps!i) = SKIP) \<and> fpos_of \<rho> (Parallel ps, s) (p, t) = [0] \<and> p = Skip \<and> s = t) \<or>
@@ -642,17 +649,17 @@ lemma pstep_rpos_retain' :
   by clarify
 
 
-text "The following lemma essentially shows that
+text "The following lemma can thus establish that
    if the program part of the i-th configuration on sq (i.e. of sq i) has a reducible position xs
-   and no program step from sq k to sq(k+1) (with i <= k < j) 'fires' xs then 
-   the program part of sq j also has xs as a position pointing to the same subterm as in sq i."
+   and no program step from sq k to sq k+1 (with i <= k < j) has xs as its fired position then the 
+   program part of sq j has the position xs pointing to the same subterm as in sq i."
 
 lemma iCOMP_rpos_retain :
 "sq \<in> iCOMP \<rho> \<Longrightarrow> fair_ret \<rho> \<Longrightarrow> xs\<in>set(rpos(progOf(sq i))) \<Longrightarrow> i < j \<Longrightarrow>
  \<forall>k\<ge>i. k < j \<longrightarrow> tkOf(sq(k+1)) \<longrightarrow> (progOf(sq k))|\<^bsub>xs\<^esub> = (progOf(sq i))|\<^bsub>xs\<^esub> \<longrightarrow> 
         fpos_of \<rho> (confOf(sq k)) (confOf(sq(k+1))) \<noteq> xs \<Longrightarrow>
  xs\<in>set(rpos(progOf(sq j))) \<and> (progOf(sq i))|\<^bsub>xs\<^esub> = (progOf(sq j))|\<^bsub>xs\<^esub>"
-    apply(induct j, simp)
+  apply(induct j, simp)
   apply clarsimp
   apply(subgoal_tac "xs \<in> set(rpos (progOf (sq j))) \<and> (progOf(sq i))|\<^bsub>xs\<^esub> = (progOf(sq j))|\<^bsub>xs\<^esub>")
    apply(drule_tac x=j in spec, simp)
