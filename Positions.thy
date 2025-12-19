@@ -362,8 +362,7 @@ lemma subst_seq :
 lemma subst_Parallel :
 "x \<in> set(rpos(fst(ps!i))) \<Longrightarrow> 
  (Parallel ps)\<lbrakk>q\<rbrakk>\<^bsub>Suc i # x\<^esub> = Parallel (ps[i := ((fst(ps!i))\<lbrakk>q\<rbrakk>\<^bsub>x\<^esub>, snd(ps!i))])"
-  by(case_tac x, simp_all)
-
+  by(case_tac x, simp_all add: list_update_beyond)
 
 
 
